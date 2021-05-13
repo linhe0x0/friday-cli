@@ -69,8 +69,8 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     })
   }
 
-  const userEntryFile = argv._[1]
-  const entryFile = resolveEntry(userEntryFile as string)
+  const userEntryFile = argv._[1] as string
+  const entryFile = resolveEntry(userEntryFile)
 
   setEnv('USER_APP_ENTRY_FILE', entryFile)
 

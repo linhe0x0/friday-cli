@@ -54,8 +54,10 @@ export default function start(argv: Arguments<StartCommandOptions>): void {
     })
   }
 
-  const userEntryFile = argv._[0] === 'start' ? argv._[1] : argv._[0]
-  const entryFile = resolveEntry(userEntryFile as string)
+  const userEntryFile = (argv._[0] === 'start'
+    ? argv._[1]
+    : argv._[0]) as string
+  const entryFile = resolveEntry(userEntryFile)
 
   setEnv('USER_APP_ENTRY_FILE', entryFile)
 
