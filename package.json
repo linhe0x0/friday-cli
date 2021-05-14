@@ -51,6 +51,7 @@
     "yargs": "~16.2.0"
   },
   "devDependencies": {
+    "@sqrtthree/friday": "~1.0.1",
     "@sqrtthree/prettier-config": "~2.0.1",
     "@sqrtthree/tsconfig": "~0.1.0",
     "@types/node": "~14.14.31",
