@@ -1,6 +1,6 @@
 {
   "name": "@sqrtthree/friday-cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Command line tools for Friday. Generate, write and run an application with one single command.",
   "main": "dist/index.js",
   "bin": {
