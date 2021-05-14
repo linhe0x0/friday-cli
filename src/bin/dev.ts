@@ -10,12 +10,13 @@ import _ from 'lodash'
 import path from 'path'
 import { Arguments } from 'yargs'
 
+import { entry } from '@sqrtthree/friday/dist/utilities/entry'
+
 import { Endpoint, EndpointProtocol } from '../types'
 import { setEnv } from '../utilities/env'
 import useHooks from '../utilities/hooks'
 import isValidPort from '../utilities/is-valid-port'
 import parseEndpoint from '../utilities/parse-endpoint'
-import resolveEntry from '../utilities/resolve-entry'
 import serve from '../utilities/serve'
 import watch from '../utilities/watcher'
 
@@ -69,13 +70,8 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     })
   }
 
-  const userEntryFile = argv._[1] as string
-  const entryFile = resolveEntry(userEntryFile)
-
-  setEnv('USER_APP_ENTRY_FILE', entryFile)
-
   const originalPort = endpoint.port
-  const hooks = useHooks(entryFile)
+  const hooks = useHooks(entry)
 
   const copyToClipboard = function copyToClipboard(content: string): boolean {
     try {
@@ -142,7 +138,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
         hooks.afterClose()
         hooks.beforeRestart()
 
-        serve(endpoint, entryFile)
+        serve(endpoint, entry)
           .then((newServer) => {
             hooks.afterRestart()
 
@@ -161,7 +157,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     .then((result) => {
       endpoint.port = result
 
-      return serve(endpoint, entryFile)
+      return serve(endpoint, entry)
     })
     .then((curretServer) => {
       const { isTTY } = process.stdout
@@ -169,7 +165,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
       const isUnixProtocol = endpoint.protocol === EndpointProtocol.UNIX
       const ipAddress = ip.address()
 
-      const toWatch = path.dirname(entryFile)
+      const toWatch = path.dirname(entry)
 
       const watcher = watch(
         toWatch,

@@ -68,6 +68,6 @@
     "typescript": "~4.2.2"
   },
   "peerDependencies": {
-    "@sqrtthree/friday": ">= 1.0.0"
+    "@sqrtthree/friday": ">= 1.0.1"
   }
 }

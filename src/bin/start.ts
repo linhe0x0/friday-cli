@@ -1,11 +1,12 @@
 import _ from 'lodash'
 import { Arguments } from 'yargs'
 
+import { entry } from '@sqrtthree/friday/dist/utilities/entry'
+
 import { Endpoint, EndpointProtocol } from '../types'
 import { setEnv } from '../utilities/env'
 import isValidPort from '../utilities/is-valid-port'
 import parseEndpoint from '../utilities/parse-endpoint'
-import resolveEntry from '../utilities/resolve-entry'
 import serve from '../utilities/serve'
 
 interface StartCommandOptions {
@@ -54,14 +55,7 @@ export default function start(argv: Arguments<StartCommandOptions>): void {
     })
   }
 
-  const userEntryFile = (argv._[0] === 'start'
-    ? argv._[1]
-    : argv._[0]) as string
-  const entryFile = resolveEntry(userEntryFile)
-
-  setEnv('USER_APP_ENTRY_FILE', entryFile)
-
-  serve(endpoint, entryFile)
+  serve(endpoint, entry)
     .then(() => {
       let message = 'Server is running.'
 
