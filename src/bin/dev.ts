@@ -106,17 +106,13 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
       })
     })
 
-    const haveToReloadFiles = _.map(
-      ['app.js', 'router/router.js'],
-      (item: string) => path.resolve(__dirname, '..', item)
-    )
-
-    const toReload = _.filter(_.keys(require.cache), (item: string) =>
-      _.includes(haveToReloadFiles, item)
+    const haveToReloadFiles = _.filter(
+      _.keys(require.cache),
+      (item: string) => item.indexOf('@sqrtthree/friday/dist') !== -1
     )
 
     // Clean cache
-    _.forEach(_.concat(toDelete, toReload), (item: string) => {
+    _.forEach(_.concat(toDelete, haveToReloadFiles), (item: string) => {
       let location: string
 
       try {
