@@ -40,7 +40,6 @@
     "src/**/*.ts": "npm run lint"
   },
   "dependencies": {
-    "@sqrtthree/friday": "~1.0.0",
     "boxen": "~5.0.0",
     "chalk": "~4.1.0",
     "chokidar": "~3.5.1",
@@ -67,5 +66,8 @@
     "lint-staged": "~10.5.4",
     "prettier": "~2.2.1",
     "typescript": "~4.2.2"
+  },
+  "peerDependencies": {
+    "@sqrtthree/friday": "~1.0.0"
   }
 }
