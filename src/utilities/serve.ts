@@ -1,26 +1,20 @@
 import http from 'http'
 
+import { emitHook } from '@sqrtthree/friday/dist/services/hooks'
+
 import { Endpoint, EndpointProtocol } from '../types'
-import useHooks from './hooks'
+import { loadApp } from './app'
 
-export default async function serve(
-  endpoint: Endpoint,
-  entryFile: string
-): Promise<http.Server> {
-  const hooks = useHooks(entryFile)
-
-  // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
-  const { app } = require('@sqrtthree/friday')
-
-  hooks.beforeStart()
-
-  const server = http.createServer(app.callback())
-
+export default async function serve(endpoint: Endpoint): Promise<http.Server> {
   return new Promise(function listen(resolve, reject): void {
-    const listenCallback = (): void => {
-      hooks.afterStart()
+    // Reload app due to cache refreshing.
+    const app = loadApp()
+    const server = http.createServer(app.callback())
 
+    const listenCallback = (): void => {
       resolve(server)
+
+      emitHook('onReady', app)
     }
 
     if (endpoint.protocol === EndpointProtocol.UNIX) {

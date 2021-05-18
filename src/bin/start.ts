@@ -1,8 +1,6 @@
 import _ from 'lodash'
 import { Arguments } from 'yargs'
 
-import { entry } from '@sqrtthree/friday/dist/utilities/entry'
-
 import { Endpoint, EndpointProtocol } from '../types'
 import { setEnv } from '../utilities/env'
 import isValidPort from '../utilities/is-valid-port'
@@ -55,7 +53,7 @@ export default function start(argv: Arguments<StartCommandOptions>): void {
     })
   }
 
-  serve(endpoint, entry)
+  serve(endpoint)
     .then(() => {
       let message = 'Server is running.'
 

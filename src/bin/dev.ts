@@ -13,8 +13,8 @@ import { Arguments } from 'yargs'
 import { entry } from '@sqrtthree/friday/dist/utilities/entry'
 
 import { Endpoint, EndpointProtocol } from '../types'
+import { loadApp } from '../utilities/app'
 import { setEnv } from '../utilities/env'
-import useHooks from '../utilities/hooks'
 import isValidPort from '../utilities/is-valid-port'
 import parseEndpoint from '../utilities/parse-endpoint'
 import serve from '../utilities/serve'
@@ -71,7 +71,6 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
   }
 
   const originalPort = endpoint.port
-  const hooks = useHooks(entry)
 
   const copyToClipboard = function copyToClipboard(content: string): boolean {
     try {
@@ -126,25 +125,44 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
       }
     })
 
-    return new Promise(function restart(resolve, reject): void {
-      hooks.beforeClose()
+    // Reload app due to cache refreshing.
+    const app = loadApp()
+    // Reload hooks due to cache refreshing.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
+    const { hooks } = require('@sqrtthree/friday')
 
-      // Restart the server
-      server.close(() => {
-        hooks.afterClose()
-        hooks.beforeRestart()
-
-        serve(endpoint, entry)
-          .then((newServer) => {
-            hooks.afterRestart()
-
-            consola.info(chalk.blue('Server is ready.'))
-
-            resolve(newServer)
+    return hooks
+      .emitHook('beforeClose', app)
+      .then(
+        (): Promise<void> => {
+          return new Promise((resolve): void => {
+            server.close((): void => {
+              resolve()
+            })
           })
-          .catch(reject)
+        }
+      )
+      .then(() => {
+        return hooks.emitHook('onClose', app)
       })
-    })
+      .then(() => {
+        return hooks.emitHook('beforeRestart', app)
+      })
+      .then(() => {
+        return serve(endpoint)
+      })
+      .then((newServer) => {
+        return hooks.emitHook('onRestart', app).then(() => {
+          hooks.cleanAllHooks()
+
+          return newServer
+        })
+      })
+      .then((newServer) => {
+        consola.info(chalk.blue('Server is ready.'))
+
+        return newServer
+      })
   }
 
   getPort({
@@ -153,7 +171,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     .then((result) => {
       endpoint.port = result
 
-      return serve(endpoint, entry)
+      return serve(endpoint)
     })
     .then((curretServer) => {
       const { isTTY } = process.stdout
