@@ -13,7 +13,6 @@ import { Arguments } from 'yargs'
 import { entry } from '@sqrtthree/friday/dist/utilities/entry'
 
 import { Endpoint, EndpointProtocol } from '../types'
-import { loadApp } from '../utilities/app'
 import { setEnv } from '../utilities/env'
 import isValidPort from '../utilities/is-valid-port'
 import parseEndpoint from '../utilities/parse-endpoint'
@@ -81,11 +80,11 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     }
   }
 
-  const restartServer = (
+  const restartServer = async function restartServer(
     watcher: chokidar.FSWatcher,
     filepath: string,
     server: http.Server
-  ): Promise<http.Server> => {
+  ): Promise<http.Server> {
     consola.info(
       `${chalk.green('File changed:')} ${path.relative(
         process.cwd(),
@@ -93,6 +92,12 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
       )}`
     )
     consola.info(chalk.blue('Restarting server...'))
+
+    // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
+    const {
+      app: originalApp,
+      hooks: originalHooks,
+    } = require('@sqrtthree/friday')
 
     const watched = watcher.getWatched()
     const toDelete: string[] = []
@@ -125,44 +130,30 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
       }
     })
 
-    // Reload app due to cache refreshing.
-    const app = loadApp()
-    // Reload hooks due to cache refreshing.
+    await originalHooks.emitHook('beforeReload', originalApp)
+
+    // Reload app and hooks due to cache refreshing.
     // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
-    const { hooks } = require('@sqrtthree/friday')
+    const { app, hooks } = require('@sqrtthree/friday')
 
-    return hooks
-      .emitHook('beforeClose', app)
-      .then(
-        (): Promise<void> => {
-          return new Promise((resolve): void => {
-            server.close((): void => {
-              resolve()
-            })
-          })
-        }
-      )
-      .then(() => {
-        return hooks.emitHook('onClose', app)
-      })
-      .then(() => {
-        return hooks.emitHook('beforeRestart', app)
-      })
-      .then(() => {
-        return serve(endpoint)
-      })
-      .then((newServer) => {
-        return hooks.emitHook('onRestart', app).then(() => {
-          hooks.cleanAllHooks()
+    await originalHooks.emitHook('beforeClose', originalApp)
 
-          return newServer
-        })
+    await new Promise<void>((resolve): void => {
+      server.close((): void => {
+        resolve()
       })
-      .then((newServer) => {
-        consola.info(chalk.blue('Server is ready.'))
+    })
 
-        return newServer
-      })
+    await originalHooks.emitHook('onClose', originalApp)
+    await originalHooks.emitHook('beforeRestart', originalApp)
+
+    const newServer = await serve(endpoint)
+
+    await hooks.emitHook('onRestart', app)
+
+    consola.info(chalk.blue('Server is ready.'))
+
+    return newServer
   }
 
   getPort({
