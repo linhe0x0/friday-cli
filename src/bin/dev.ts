@@ -173,7 +173,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
 
       return serve(endpoint)
     })
-    .then((curretServer) => {
+    .then((server) => {
       const { isTTY } = process.stdout
       const usedPort = endpoint.port
       const isUnixProtocol = endpoint.protocol === EndpointProtocol.UNIX
@@ -181,13 +181,18 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
 
       const toWatch = path.dirname(entry)
 
+      let currentServer = server
+
       const watcher = watch(
         toWatch,
         '',
         _.debounce(async (_event: string, filepath: string) => {
           try {
-            // eslint-disable-next-line no-param-reassign
-            curretServer = await restartServer(watcher, filepath, curretServer)
+            currentServer = await restartServer(
+              watcher,
+              filepath,
+              currentServer
+            )
           } catch (err) {
             consola.error('Failed to restart the server.', err)
             process.exit(1)
