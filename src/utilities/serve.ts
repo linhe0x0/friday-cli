@@ -1,6 +1,24 @@
+import consola from 'consola'
 import http from 'http'
 
 import { Endpoint, EndpointProtocol } from '../types'
+
+const gracefulShutdown = (fn: Function): void => {
+  let run = false
+
+  const onceWrapper = () => {
+    if (!run) {
+      run = true
+
+      consola.info('Gracefully shutting down. Please wait...')
+      fn()
+    }
+  }
+
+  process.on('SIGINT', onceWrapper)
+  process.on('SIGTERM', onceWrapper)
+  process.on('exit', onceWrapper)
+}
 
 export default async function serve(endpoint: Endpoint): Promise<http.Server> {
   return new Promise(function listen(resolve, reject): void {
@@ -11,6 +29,10 @@ export default async function serve(endpoint: Endpoint): Promise<http.Server> {
 
     const listenCallback = (): void => {
       resolve(server)
+
+      gracefulShutdown(() => {
+        server.close()
+      })
 
       hooks.emitHook('onReady', app)
     }
