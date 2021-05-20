@@ -3,7 +3,7 @@ import http from 'http'
 
 import { Endpoint, EndpointProtocol } from '../types'
 
-const gracefulShutdown = (fn: Function): void => {
+const gracefulShutdown = (fn: () => void): void => {
   let run = false
 
   const onceWrapper = () => {

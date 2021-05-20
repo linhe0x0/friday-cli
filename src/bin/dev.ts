@@ -93,10 +93,10 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     )
     consola.info(chalk.blue('Restarting server...'))
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
     const {
       app: originalApp,
       hooks: originalHooks,
+      // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
     } = require('@sqrtthree/friday')
 
     const watched = watcher.getWatched()
