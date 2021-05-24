@@ -147,7 +147,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     await originalHooks.emitHook('onClose', originalApp)
     await originalHooks.emitHook('beforeRestart', originalApp)
 
-    const newServer = await serve(endpoint)
+    const newServer = await serve(endpoint, true)
 
     await hooks.emitHook('onRestart', app)
 
@@ -162,7 +162,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     .then((result) => {
       endpoint.port = result
 
-      return serve(endpoint)
+      return serve(endpoint, true)
     })
     .then((server) => {
       const { isTTY } = process.stdout

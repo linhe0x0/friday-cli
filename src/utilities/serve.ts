@@ -20,7 +20,10 @@ const gracefulShutdown = (fn: () => void): void => {
   process.on('exit', onceWrapper)
 }
 
-export default async function serve(endpoint: Endpoint): Promise<http.Server> {
+export default async function serve(
+  endpoint: Endpoint,
+  isDev: boolean
+): Promise<http.Server> {
   return new Promise(function listen(resolve, reject): void {
     // Reload app and hooks due to cache refreshing.
     // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
@@ -30,9 +33,11 @@ export default async function serve(endpoint: Endpoint): Promise<http.Server> {
     const listenCallback = (): void => {
       resolve(server)
 
-      gracefulShutdown(() => {
-        server.close()
-      })
+      if (!isDev) {
+        gracefulShutdown(() => {
+          server.close()
+        })
+      }
 
       hooks.emitHook('onReady', app)
     }

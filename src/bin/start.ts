@@ -53,7 +53,7 @@ export default function start(argv: Arguments<StartCommandOptions>): void {
     })
   }
 
-  serve(endpoint)
+  serve(endpoint, false)
     .then(() => {
       let message = 'Server is running.'
 
