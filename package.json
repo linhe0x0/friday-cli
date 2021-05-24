@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@sqrtthree/eslint-config-ts": "~0.1.0",
-    "@sqrtthree/friday": "~1.0.1",
+    "@sqrtthree/friday": "~1.1.0",
     "@sqrtthree/prettier-config": "~2.0.1",
     "@sqrtthree/tsconfig": "~0.1.0",
     "@types/node": "~15.6.0",
@@ -61,6 +61,6 @@
     "typescript": "~4.2.4"
   },
   "peerDependencies": {
-    "@sqrtthree/friday": ">= 1.0.1"
+    "@sqrtthree/friday": ">= 1.1.0"
   }
 }
