@@ -27,7 +27,8 @@ export default async function serve(
   return new Promise(function listen(resolve, reject): void {
     // Reload app and hooks due to cache refreshing.
     // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
-    const { app, hooks } = require('@sqrtthree/friday')
+    const { createApp, hooks } = require('@sqrtthree/friday')
+    const app = createApp()
     const server = http.createServer(app.callback())
 
     const listenCallback = (): void => {

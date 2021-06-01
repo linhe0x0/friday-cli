@@ -94,10 +94,11 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     consola.info(chalk.blue('Restarting server...'))
 
     const {
-      app: originalApp,
+      createApp: createOriginalApp,
       hooks: originalHooks,
       // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
     } = require('@sqrtthree/friday')
+    const originalApp = createOriginalApp()
 
     const watched = watcher.getWatched()
     const toDelete: string[] = []
@@ -134,7 +135,8 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
 
     // Reload app and hooks due to cache refreshing.
     // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
-    const { app, hooks } = require('@sqrtthree/friday')
+    const { createApp, hooks } = require('@sqrtthree/friday')
+    const app = createApp()
 
     await originalHooks.emitHook('beforeClose', originalApp)
 
