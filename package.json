@@ -47,6 +47,7 @@
     "ip": "~1.1.5",
     "lodash": "~4.17.21",
     "ms": "~2.1.2",
+    "read-pkg-up": "~7.0.1",
     "rimraf": "~3.0.2",
     "yargs": "~17.0.1"
   },
@@ -55,6 +56,7 @@
     "@sqrtthree/friday": "~1.1.1",
     "@sqrtthree/prettier-config": "~2.0.1",
     "@sqrtthree/tsconfig": "~0.1.0",
+    "@types/lodash": "~4.14.170",
     "@types/node": "~15.6.0",
     "@types/yargs": "~17.0.0",
     "eslint": "~7.27.0",

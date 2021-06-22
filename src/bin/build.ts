@@ -8,6 +8,7 @@ import { Arguments } from 'yargs'
 
 import { transformFileAsync, TransformOptions } from '@babel/core'
 
+import { checkDependencies } from '../utilities/dependency'
 import { setEnv } from '../utilities/env'
 import {
   copyFile,
@@ -17,7 +18,7 @@ import {
   relative,
   removeFiles,
 } from '../utilities/fs'
-import logger from '../utilities/logger'
+import logger, { blankLine, list } from '../utilities/logger'
 
 interface BuildCommandOptions {
   clean?: boolean
@@ -168,12 +169,12 @@ export function buildDir(
       const compiledResults: boolean[] = _.filter(
         results,
         (item: boolean | string): boolean => typeof item === 'boolean' && item
-      )
+      ) as boolean[]
 
       const failedResults: string[] = _.filter(
         results,
         (item: boolean | string): boolean => typeof item === 'string'
-      )
+      ) as string[]
 
       compiled = compiledResults.length
       failed = failedResults.length
@@ -201,13 +202,11 @@ export function buildDir(
       if (failed > 0) {
         logger.error('The following files are not compiled successfully:')
 
-        _.forEach(failedFiles, (item: string): void => {
-          // eslint-disable-next-line no-console
-          console.log(`    ${relative(item)}`)
-        })
+        const relativeFailedFiles = _.map(failedFiles, (item) => relative(item))
 
-        // eslint-disable-next-line no-console
-        console.log('')
+        list(relativeFailedFiles)
+        blankLine()
+
         logger.info(
           `Total: ${total}, compiled: ${compiled}, copied: ${copied}, failed: ${failed}`
         )
@@ -242,6 +241,37 @@ export default function build(argv: Arguments<BuildCommandOptions>): void {
 
   if (_.isNil(process.env.NODE_ENV)) {
     setEnv('NODE_ENV', 'production')
+  }
+
+  logger.debug('Checking required dependencies')
+
+  const dependencies = checkDependencies([
+    '@babel/preset-env',
+    '@babel/preset-typescript',
+  ])
+  const missingDependencies = _.filter(
+    _.keys(dependencies),
+    (item: string): boolean => !dependencies[item]
+  )
+
+  if (missingDependencies.length) {
+    logger.error(
+      'Some dependencies are required but not found in package.json file:'
+    )
+
+    list(missingDependencies)
+
+    blankLine()
+
+    logger.info(
+      `Run npm i -D ${missingDependencies.join(
+        ' '
+      )} to install missing dependencies.`
+    )
+
+    blankLine()
+
+    process.exit(1)
   }
 
   logger.debug(`Source dir: ${src}`)
