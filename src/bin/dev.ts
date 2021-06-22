@@ -25,7 +25,7 @@ interface DevCommandOptions {
 }
 
 export default function dev(argv: Arguments<DevCommandOptions>): void {
-  const { host, port, listen, silent } = argv
+  const { host, port, listen } = argv
   const defaultPort = parseInt(process.env.PORT || '3000', 10) || 3000
   const defaultHost = '0.0.0.0'
 
@@ -34,10 +34,6 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
   }
 
   setEnv('FRIDAY_ENV', 'development')
-
-  if (silent) {
-    process.env.LOGGER_LEVEL = 'silent'
-  }
 
   const isHostOrPortProvided = !!(host || port)
 
