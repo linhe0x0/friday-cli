@@ -4,6 +4,7 @@ import { Arguments } from 'yargs'
 import { Endpoint, EndpointProtocol } from '../types'
 import { setEnv } from '../utilities/env'
 import isValidPort from '../utilities/is-valid-port'
+import logger from '../utilities/logger'
 import parseEndpoint from '../utilities/parse-endpoint'
 import serve from '../utilities/serve'
 
@@ -27,13 +28,13 @@ export default function start(argv: Arguments<StartCommandOptions>): void {
   const isHostOrPortProvided = !!(host || port)
 
   if (isHostOrPortProvided && listen) {
-    console.error('Both host/port and tcp provided. You can only use one.')
+    logger.error('Both host/port and tcp provided. You can only use one.')
     process.exit(1)
   }
 
   if (port) {
     if (!isValidPort(port)) {
-      console.error(`Port option must be a number. Got: ${port}`)
+      logger.error(`Port option must be a number but got: ${port}`)
       process.exit(1)
     }
   }
@@ -66,7 +67,7 @@ export default function start(argv: Arguments<StartCommandOptions>): void {
       process.stdout.write(message)
     })
     .catch((err) => {
-      console.error(err)
+      logger.error(`Cannot serve app:`, err.message)
       process.exit(1)
     })
 }

@@ -42,13 +42,13 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
   const isHostOrPortProvided = !!(host || port)
 
   if (isHostOrPortProvided && listen) {
-    console.error('Both host/port and tcp provided. You can only use one.')
+    logger.error('Both host/port and tcp provided. You can only use one.')
     process.exit(1)
   }
 
   if (port) {
     if (!isValidPort(port)) {
-      console.error(`Port option must be a number. Got: ${port}`)
+      logger.error(`Port option must be a number but got: ${port}`)
       process.exit(1)
     }
   }
