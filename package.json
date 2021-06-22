@@ -36,14 +36,18 @@
     "src/**/*.ts": "npm run lint"
   },
   "dependencies": {
+    "@babel/core": "~7.14.6",
     "boxen": "~5.0.0",
     "chalk": "~4.1.0",
     "chokidar": "~3.5.1",
     "clipboardy": "~2.3.0",
     "consola": "~2.15.3",
+    "fast-glob": "~3.2.5",
     "get-port": "~5.1.1",
     "ip": "~1.1.5",
     "lodash": "~4.17.21",
+    "ms": "~2.1.2",
+    "rimraf": "~3.0.2",
     "yargs": "~17.0.1"
   },
   "devDependencies": {

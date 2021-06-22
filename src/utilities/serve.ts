@@ -1,7 +1,7 @@
-import consola from 'consola'
 import http from 'http'
 
 import { Endpoint, EndpointProtocol } from '../types'
+import logger from './logger'
 
 const gracefulShutdown = (fn: () => void): void => {
   let run = false
@@ -10,7 +10,7 @@ const gracefulShutdown = (fn: () => void): void => {
     if (!run) {
       run = true
 
-      consola.info('Gracefully shutting down. Please wait...')
+      logger.info('Gracefully shutting down. Please wait...')
       fn()
     }
   }

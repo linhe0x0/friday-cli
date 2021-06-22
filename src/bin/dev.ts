@@ -2,7 +2,6 @@ import boxen from 'boxen'
 import chalk from 'chalk'
 import chokidar from 'chokidar'
 import clipboardy from 'clipboardy'
-import consola from 'consola'
 import getPort from 'get-port'
 import http from 'http'
 import ip from 'ip'
@@ -10,11 +9,11 @@ import _ from 'lodash'
 import path from 'path'
 import { Arguments } from 'yargs'
 
-import { entry } from '@sqrtthree/friday/dist/utilities/entry'
-
 import { Endpoint, EndpointProtocol } from '../types'
+import { getEntryFile } from '../utilities/entry'
 import { setEnv } from '../utilities/env'
 import isValidPort from '../utilities/is-valid-port'
+import logger from '../utilities/logger'
 import parseEndpoint from '../utilities/parse-endpoint'
 import serve from '../utilities/serve'
 import watch from '../utilities/watcher'
@@ -85,13 +84,13 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     filepath: string,
     server: http.Server
   ): Promise<http.Server> {
-    consola.info(
+    logger.info(
       `${chalk.green('File changed:')} ${path.relative(
         process.cwd(),
         filepath
       )}`
     )
-    consola.info(chalk.blue('Restarting server...'))
+    logger.info(chalk.blue('Restarting server...'))
 
     const {
       createApp: createOriginalApp,
@@ -153,7 +152,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
 
     await hooks.emitHook('onRestart', app)
 
-    consola.info(chalk.blue('Server is ready.'))
+    logger.info(chalk.blue('Server is ready.'))
 
     return newServer
   }
@@ -171,7 +170,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
       const usedPort = endpoint.port
       const isUnixProtocol = endpoint.protocol === EndpointProtocol.UNIX
       const ipAddress = ip.address()
-
+      const entry = getEntryFile()
       const toWatch = path.dirname(entry)
 
       let currentServer = server
@@ -187,7 +186,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
               currentServer
             )
           } catch (err) {
-            consola.error('Failed to restart the server.', err)
+            logger.error('Failed to restart the server.', err)
             process.exit(1)
           }
         }, 200)
@@ -233,7 +232,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
       process.stdout.write(box)
     })
     .catch((err) => {
-      consola.error(err)
+      logger.error(err)
       process.exit(1)
     })
 }

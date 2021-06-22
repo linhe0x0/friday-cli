@@ -2,6 +2,7 @@
 
 import yargs from 'yargs'
 
+import build from './bin/build'
 import dev from './bin/dev'
 import start from './bin/start'
 
@@ -62,6 +63,28 @@ yargs
       },
     },
     dev
+  )
+  .command(
+    'build',
+    'build typescript code to js',
+    {
+      clean: {
+        alias: 'c',
+        describe: 'delete the outputs of all projects',
+        type: 'boolean',
+      },
+      watch: {
+        alias: 'w',
+        describe: 'watch input files',
+        type: 'boolean',
+      },
+      dist: {
+        alias: 'd',
+        describe: 'Specify an output folder for all emitted files',
+        type: 'string',
+      },
+    },
+    build
   )
   .help()
   .example(
