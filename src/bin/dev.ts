@@ -12,6 +12,7 @@ import { Arguments } from 'yargs'
 import { Endpoint, EndpointProtocol } from '../types'
 import { getEntryFile } from '../utilities/entry'
 import { setEnv } from '../utilities/env'
+import { relative } from '../utilities/fs'
 import isValidPort from '../utilities/is-valid-port'
 import logger from '../utilities/logger'
 import parseEndpoint from '../utilities/parse-endpoint'
@@ -213,11 +214,11 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
         const copied = copyToClipboard(localURL)
 
         if (copied) {
-          message += chalk.grey('Copied local address to clipboard.\n')
+          message += 'Copied local address to clipboard.\n'
         }
       }
 
-      message += chalk.grey(`And watching for file changes: ${toWatch}`)
+      message += `And watching for file changes: ./${relative(toWatch)}`
 
       const box = boxen(message, {
         padding: 1,
