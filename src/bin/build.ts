@@ -19,6 +19,7 @@ import {
   removeFiles,
 } from '../utilities/fs'
 import logger, { blankLine, list } from '../utilities/logger'
+import { gracefulShutdown } from '../utilities/process'
 import watch from '../utilities/watcher'
 
 interface BuildCommandOptions {
@@ -295,7 +296,7 @@ export default function build(argv: Arguments<BuildCommandOptions>): void {
 
         logger.info('Watching for file changes:', relative(toWatch))
 
-        watch(
+        const watcher = watch(
           toWatch,
           /\.(?!.*(ts|json)$).*$/, // Non ts/json files.
           _.debounce(async (_event: string, filepath: string) => {
@@ -320,6 +321,20 @@ export default function build(argv: Arguments<BuildCommandOptions>): void {
               })
           }, 500)
         )
+
+        gracefulShutdown(() => {
+          logger.debug('Gracefully shutting down. Please wait...')
+          logger.debug('Closing watcher')
+
+          watcher
+            .close()
+            .then(() => {
+              logger.debug('Watcher has been closed')
+            })
+            .catch((err) => {
+              logger.warn(`Failed to close watcher: ${err.message}`)
+            })
+        })
       }
     })
     .catch((err) => {

@@ -2,23 +2,7 @@ import http from 'http'
 
 import { Endpoint, EndpointProtocol } from '../types'
 import logger from './logger'
-
-const gracefulShutdown = (fn: () => void): void => {
-  let run = false
-
-  const onceWrapper = () => {
-    if (!run) {
-      run = true
-
-      logger.info('Gracefully shutting down. Please wait...')
-      fn()
-    }
-  }
-
-  process.on('SIGINT', onceWrapper)
-  process.on('SIGTERM', onceWrapper)
-  process.on('exit', onceWrapper)
-}
+import { gracefulShutdown } from './process'
 
 export default async function serve(
   endpoint: Endpoint,
@@ -36,6 +20,8 @@ export default async function serve(
 
       if (!isDev) {
         gracefulShutdown(() => {
+          logger.info('Gracefully shutting down. Please wait...')
+          logger.debug('Closing app server')
           server.close()
         })
       }

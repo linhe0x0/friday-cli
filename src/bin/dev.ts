@@ -16,6 +16,7 @@ import { relative } from '../utilities/fs'
 import isValidPort from '../utilities/is-valid-port'
 import logger from '../utilities/logger'
 import parseEndpoint from '../utilities/parse-endpoint'
+import { gracefulShutdown } from '../utilities/process'
 import serve from '../utilities/serve'
 import watch from '../utilities/watcher'
 
@@ -188,6 +189,20 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
           }
         }, 500)
       )
+
+      gracefulShutdown(() => {
+        logger.debug('Gracefully shutting down. Please wait...')
+        logger.debug('Closing watcher')
+
+        watcher
+          .close()
+          .then(() => {
+            logger.debug('Watcher has been closed')
+          })
+          .catch((err) => {
+            logger.warn(`Failed to close watcher: ${err.message}`)
+          })
+      })
 
       let message = chalk.green('Friday is running:')
 
