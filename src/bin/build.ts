@@ -48,12 +48,6 @@ const devFriendlyBabelOptions = _.assign({}, babelOptions, {
   retainLines: true,
 })
 
-const cleanOutput = function cleanOutput(target: string): Promise<void> {
-  logger.debug(`Deleting the outputs of all projects in ${target}`)
-
-  return removeFiles(target)
-}
-
 const compile = function compile(
   filename: string,
   devFriendly?: boolean
@@ -91,12 +85,13 @@ const copyFiles = function copyFiles(
 
 const compileFiles = function compileFiles(
   filenames: string[],
-  buildOptions: BuildOptions
+  baseDir: string,
+  outputDir: string
 ): Promise<(boolean | string)[]> {
   const actions = _.map(filenames, (item: string): Promise<
     boolean | string
   > => {
-    const to = getMirrorFile(item, buildOptions.src, buildOptions.dist, '.js')
+    const to = getMirrorFile(item, baseDir, outputDir, '.js')
 
     logger.debug(`Compile file: ${relative(item)} => ${to}`)
 
@@ -121,25 +116,32 @@ const compileFiles = function compileFiles(
   return Promise.all(actions)
 }
 
+export function cleanOutput(target: string): Promise<void> {
+  logger.debug(`Deleting the outputs of all projects in ${target}`)
+
+  return removeFiles(target)
+}
+
 export function buildFiles(
   filenames: string[],
-  buildOptions: BuildOptions
+  baseDir: string,
+  outputDir: string
 ): Promise<(boolean | string)[]> {
-  const { src, dist } = buildOptions
   const tsFiles = _.filter(filenames, (item: string): boolean => isTsFile(item))
   const otherFiles = _.filter(
     filenames,
     (item: string): boolean => !isTsFile(item)
   )
 
-  return copyFiles(otherFiles, src, dist).then(() => {
-    return compileFiles(tsFiles, buildOptions)
+  return copyFiles(otherFiles, baseDir, outputDir).then(() => {
+    return compileFiles(tsFiles, baseDir, outputDir)
   })
 }
 
 export function buildDir(
   target: string,
-  buildOptions: BuildOptions
+  baseDir: string,
+  outputDir: string
 ): Promise<void> {
   const filePattern = `${target}/**`
   const filenames: string[] = fastGlob.sync(filePattern)
@@ -163,9 +165,9 @@ export function buildDir(
 
   const startTime = Date.now()
 
-  return copyFiles(otherFiles, target, buildOptions.dist)
+  return copyFiles(otherFiles, target, outputDir)
     .then(() => {
-      return compileFiles(tsFiles, buildOptions)
+      return compileFiles(tsFiles, baseDir, outputDir)
     })
     .then((results: (boolean | string)[]) => {
       const compiledResults: boolean[] = _.filter(
@@ -224,6 +226,51 @@ export function buildDir(
         logger.success(`Successfully ${actions} with Babel (${diff}).`)
       }
     })
+}
+
+export function watchFilesToBuild(
+  toWatch: string,
+  fn: (filepath: string) => Promise<void>
+): void {
+  const watcher = watch(
+    toWatch,
+    /\.(?!.*(ts|json)$).*$/, // Non ts/json files.
+    _.debounce(async (_event: string, filepath: string) => {
+      const relativeFilepath = relative(filepath)
+
+      logger.debug(`File changed: ${relativeFilepath}`)
+      logger.debug(`Rebuilding file: ${relativeFilepath}`)
+
+      const startTime = Date.now()
+
+      fn(filepath)
+        .then(() => {
+          const endTime = Date.now()
+          const diff = ms(endTime - startTime)
+
+          logger.success(`Rebuilt file: ${relativeFilepath} (${diff})`)
+        })
+        .catch((err) => {
+          logger.error(
+            `Cannot rebuild file ${relativeFilepath}, Error: ${err.message}`
+          )
+        })
+    }, 500)
+  )
+
+  gracefulShutdown(() => {
+    logger.debug('Gracefully shutting down. Please wait...')
+    logger.debug('Closing watcher')
+
+    watcher
+      .close()
+      .then(() => {
+        logger.debug('Watcher has been closed')
+      })
+      .catch((err) => {
+        logger.warn(`Failed to close watcher: ${err.message}`)
+      })
+  })
 }
 
 export default function build(argv: Arguments<BuildCommandOptions>): void {
@@ -288,53 +335,18 @@ export default function build(argv: Arguments<BuildCommandOptions>): void {
     .then(() => {
       mkdirSync(opts.dist, { recursive: true })
 
-      return buildDir(src, opts)
+      return buildDir(src, src, opts.dist)
     })
     .then(() => {
       if (opts.watch) {
         const toWatch = opts.src
 
-        logger.info('Watching for file changes:', relative(toWatch))
-
-        const watcher = watch(
-          toWatch,
-          /\.(?!.*(ts|json)$).*$/, // Non ts/json files.
-          _.debounce(async (_event: string, filepath: string) => {
-            const relativeFilepath = relative(filepath)
-
-            logger.debug(`File changed: ${relativeFilepath}`)
-            logger.debug(`Rebuilding file: ${relativeFilepath}`)
-
-            const startTime = Date.now()
-
-            buildFiles([filepath], opts)
-              .then(() => {
-                const endTime = Date.now()
-                const diff = ms(endTime - startTime)
-
-                logger.success(`Rebuilt file: ${relativeFilepath} (${diff})`)
-              })
-              .catch((err) => {
-                logger.error(
-                  `Cannot rebuild file ${relativeFilepath}, Error: ${err.message}`
-                )
-              })
-          }, 500)
-        )
-
-        gracefulShutdown(() => {
-          logger.debug('Gracefully shutting down. Please wait...')
-          logger.debug('Closing watcher')
-
-          watcher
-            .close()
-            .then(() => {
-              logger.debug('Watcher has been closed')
-            })
-            .catch((err) => {
-              logger.warn(`Failed to close watcher: ${err.message}`)
-            })
+        watchFilesToBuild(toWatch, (filepath: string): Promise<void> => {
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          return buildFiles([filepath], opts.src, opts.dist).then(() => {})
         })
+
+        logger.info('Watching for file changes:', relative(toWatch))
       }
     })
     .catch((err) => {

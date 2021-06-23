@@ -61,6 +61,23 @@ yargs
         describe: 'path to a UNIX socket',
         type: 'string',
       },
+      'no-clean': {
+        describe: 'disable to delete the outputs of all projects',
+        type: 'boolean',
+      },
+      'no-build': {
+        describe: 'disable file compilation of all projects',
+        type: 'boolean',
+      },
+      'skip-initial-build': {
+        describe: 'skip initial build at startup',
+        type: 'boolean',
+      },
+      dist: {
+        alias: 'd',
+        describe: 'specify an output folder for all emitted files',
+        type: 'string',
+      },
     },
     dev
   )
@@ -80,7 +97,7 @@ yargs
       },
       dist: {
         alias: 'd',
-        describe: 'Specify an output folder for all emitted files',
+        describe: 'specify an output folder for all emitted files',
         type: 'string',
       },
     },

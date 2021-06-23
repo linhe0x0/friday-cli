@@ -20,17 +20,52 @@ import parseEndpoint from '../utilities/parse-endpoint'
 import { gracefulShutdown } from '../utilities/process'
 import serve from '../utilities/serve'
 import watch from '../utilities/watcher'
+import { buildDir, buildFiles, cleanOutput, watchFilesToBuild } from './build'
 
 interface DevCommandOptions {
   host?: string
   port?: number
   listen?: string
+
+  // For building
+  clean?: boolean
+  build?: boolean
+  skipInitialBuild?: boolean
+  dist?: string
+}
+
+type DevOptions = Required<DevCommandOptions> & {
+  src: string
 }
 
 export default function dev(argv: Arguments<DevCommandOptions>): void {
-  const { host, port, listen } = argv
+  const cwd = process.cwd()
+  const src = path.resolve(cwd, 'src')
+
   const defaultPort = parseInt(process.env.PORT || '3000', 10) || 3000
   const defaultHost = '0.0.0.0'
+
+  const opts: DevOptions = _.assign(
+    {
+      host: defaultHost,
+      port: defaultPort,
+      listen: '',
+      src,
+      clean: true,
+      build: true,
+      skipInitialBuild: false,
+      dist: 'dist',
+    },
+    argv
+  )
+
+  if (opts.skipInitialBuild) {
+    opts.clean = false
+
+    logger.warn('Disable clean task due to --skip-initial-build option')
+  }
+
+  const { host, port, listen } = opts
 
   if (_.isNil(process.env.NODE_ENV)) {
     setEnv('NODE_ENV', 'development')
@@ -182,9 +217,41 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
   getPort({
     port: endpoint.port,
   })
-    .then((result) => {
+    .then((result): Promise<void> | void => {
       endpoint.port = result
 
+      if (!opts.clean) {
+        logger.debug('Skip clean task due to --no-clean option')
+        return undefined
+      }
+
+      return cleanOutput(opts.dist)
+    })
+    .then((): Promise<void> | void => {
+      if (!opts.build) {
+        return undefined
+      }
+
+      const toWatch = opts.src
+
+      watchFilesToBuild(toWatch, (filepath: string): Promise<void> => {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        return buildFiles([filepath], opts.src, opts.dist).then(() => {})
+      })
+
+      logger.debug('Watching to build for file changes:', relative(opts.src))
+
+      if (opts.skipInitialBuild && !opts.clean) {
+        logger.debug('Skip initial build due to --skip-initial-build option')
+
+        return undefined
+      }
+
+      logger.info('Start initial build')
+
+      return buildDir(opts.src, opts.src, opts.dist)
+    })
+    .then(() => {
       return serve(endpoint, true)
     })
     .then((server) => {
