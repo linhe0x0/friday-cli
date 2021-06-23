@@ -1,5 +1,4 @@
 import chokidar from 'chokidar'
-import _ from 'lodash'
 
 export default function watch(
   target: string,
@@ -11,7 +10,6 @@ export default function watch(
     ignoreInitial: true,
     ignored: [
       /(^|[/\\])\../, // .dotfiles
-      /\.(?!.*(json|js)$).*$/, // Non js/json files.
     ],
   }
 
@@ -25,7 +23,7 @@ export default function watch(
 
   const watcher = chokidar.watch(target, watchConfig)
 
-  watcher.on('all', _.debounce(callback, 10))
+  watcher.on('all', callback)
 
   return watcher
 }

@@ -149,7 +149,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
 
     await hooks.emitHook('onRestart', app)
 
-    logger.info(chalk.blue('Server is ready.'))
+    logger.info(chalk.green('Server is ready.'))
 
     return newServer
   }
@@ -174,7 +174,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
 
       const watcher = watch(
         toWatch,
-        '',
+        /\.(?!.*(js|json)$).*$/, // Non js/json files.
         _.debounce(async (_event: string, filepath: string) => {
           try {
             currentServer = await restartServer(
@@ -183,10 +183,10 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
               currentServer
             )
           } catch (err) {
-            logger.error('Failed to restart the server.', err)
+            logger.error(`Failed to restart the server: ${err.message}`)
             process.exit(1)
           }
-        }, 200)
+        }, 500)
       )
 
       let message = chalk.green('Friday is running:')

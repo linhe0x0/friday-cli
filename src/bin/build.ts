@@ -19,6 +19,7 @@ import {
   removeFiles,
 } from '../utilities/fs'
 import logger, { blankLine, list } from '../utilities/logger'
+import watch from '../utilities/watcher'
 
 interface BuildCommandOptions {
   clean?: boolean
@@ -287,6 +288,39 @@ export default function build(argv: Arguments<BuildCommandOptions>): void {
       mkdirSync(opts.dist, { recursive: true })
 
       return buildDir(src, opts)
+    })
+    .then(() => {
+      if (opts.watch) {
+        const toWatch = opts.src
+
+        logger.info('Watching for file changes:', relative(toWatch))
+
+        watch(
+          toWatch,
+          /\.(?!.*(ts|json)$).*$/, // Non ts/json files.
+          _.debounce(async (_event: string, filepath: string) => {
+            const relativeFilepath = relative(filepath)
+
+            logger.debug(`File changed: ${relativeFilepath}`)
+            logger.debug(`Rebuilding file: ${relativeFilepath}`)
+
+            const startTime = Date.now()
+
+            buildFiles([filepath], opts)
+              .then(() => {
+                const endTime = Date.now()
+                const diff = ms(endTime - startTime)
+
+                logger.success(`Rebuilt file: ${relativeFilepath} (${diff})`)
+              })
+              .catch((err) => {
+                logger.error(
+                  `Cannot rebuild file ${relativeFilepath}, Error: ${err.message}`
+                )
+              })
+          }, 500)
+        )
+      }
     })
     .catch((err) => {
       logger.error(`Failed to build files in ${src}: ${err.message}`)
