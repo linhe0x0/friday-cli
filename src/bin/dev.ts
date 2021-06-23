@@ -10,6 +10,7 @@ import path from 'path'
 import { Arguments } from 'yargs'
 
 import { Endpoint, EndpointProtocol } from '../types'
+import { getConfigDir, isConfigFile } from '../utilities/config'
 import { getEntryFile } from '../utilities/entry'
 import { setEnv } from '../utilities/env'
 import { relative } from '../utilities/fs'
@@ -82,12 +83,19 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     filepath: string,
     server: http.Server
   ): Promise<http.Server> {
-    logger.info(
-      `${chalk.green('File changed:')} ${path.relative(
-        process.cwd(),
-        filepath
-      )}`
-    )
+    const relativeFilepath = relative(filepath)
+    const configChanged = isConfigFile(filepath)
+
+    logger.info(`${chalk.green('File changed:')} ${relativeFilepath}`)
+
+    if (configChanged) {
+      logger.info(
+        `${chalk.yellow(
+          'Reload due to configuration file changes:'
+        )} ${relativeFilepath}`
+      )
+    }
+
     logger.info(chalk.blue('Restarting server...'))
 
     const {
@@ -110,7 +118,23 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
 
     const haveToReloadFiles = _.filter(
       _.keys(require.cache),
-      (item: string) => item.indexOf('@sqrtthree/friday/dist') !== -1
+      (item: string): boolean => {
+        if (item.indexOf('@sqrtthree/friday/dist') !== -1) {
+          return true
+        }
+
+        const distDir = path.join(process.cwd(), 'dist')
+
+        if (item.indexOf(distDir) !== -1) {
+          return true
+        }
+
+        if (configChanged && item.indexOf('node_modules/config') !== -1) {
+          return true
+        }
+
+        return false
+      }
     )
 
     // Clean cache
@@ -170,16 +194,33 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
       const ipAddress = ip.address()
       const entry = getEntryFile()
       const toWatch = path.dirname(entry)
+      const configDir = getConfigDir()
 
       let currentServer = server
 
-      const watcher = watch(
+      const appWatcher = watch(
         toWatch,
         /\.(?!.*(js|json)$).*$/, // Non js/json files.
         _.debounce(async (_event: string, filepath: string) => {
           try {
             currentServer = await restartServer(
-              watcher,
+              appWatcher,
+              filepath,
+              currentServer
+            )
+          } catch (err) {
+            logger.error(`Failed to restart the server: ${err.message}`)
+            process.exit(1)
+          }
+        }, 500)
+      )
+      const configWatcher = watch(
+        configDir,
+        '',
+        _.debounce(async (_event: string, filepath: string) => {
+          try {
+            currentServer = await restartServer(
+              configWatcher,
               filepath,
               currentServer
             )
@@ -194,8 +235,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
         logger.debug('Gracefully shutting down. Please wait...')
         logger.debug('Closing watcher')
 
-        watcher
-          .close()
+        Promise.all([appWatcher.close(), configWatcher.close()])
           .then(() => {
             logger.debug('Watcher has been closed')
           })
