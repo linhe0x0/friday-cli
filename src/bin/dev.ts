@@ -232,16 +232,39 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
       )
 
       gracefulShutdown(() => {
-        logger.debug('Gracefully shutting down. Please wait...')
-        logger.debug('Closing watcher')
+        const closeWatcher = (): Promise<void> => {
+          logger.debug('Closing watcher...')
 
-        Promise.all([appWatcher.close(), configWatcher.close()])
-          .then(() => {
-            logger.debug('Watcher has been closed')
+          return Promise.all([appWatcher.close(), configWatcher.close()]).then(
+            () => {
+              logger.debug('Watcher has been closed')
+            }
+          )
+        }
+        const closeServer = (): Promise<void> => {
+          return new Promise<void>((resolve, reject) => {
+            logger.debug('Closing server...')
+
+            currentServer.close((err) => {
+              if (err) {
+                reject(err)
+
+                return
+              }
+
+              logger.debug('Server has been closed')
+              resolve()
+            })
           })
-          .catch((err) => {
-            logger.warn(`Failed to close watcher: ${err.message}`)
-          })
+        }
+
+        logger.debug('Gracefully shutting down. Please wait...')
+
+        Promise.all([closeWatcher(), closeServer()]).catch((err) => {
+          logger.warn(
+            `Failed to close opened watchers or server: ${err.message}`
+          )
+        })
       })
 
       let message = chalk.green('Friday is running:')
