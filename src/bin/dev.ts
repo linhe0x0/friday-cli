@@ -233,11 +233,11 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
 
       gracefulShutdown(() => {
         const closeWatcher = (): Promise<void> => {
-          logger.debug('Closing watcher...')
+          logger.debug('Closing watchers...')
 
           return Promise.all([appWatcher.close(), configWatcher.close()]).then(
             () => {
-              logger.debug('Watcher has been closed')
+              logger.debug('Watchers have been closed')
             }
           )
         }
