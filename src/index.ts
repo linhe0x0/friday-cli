@@ -1,11 +1,30 @@
 #!/usr/bin/env node
 
+import _ from 'lodash'
 import yargs from 'yargs'
 
 import build from './bin/build'
 import dev from './bin/dev'
 import lint from './bin/lint'
 import start from './bin/start'
+import { getEnvVersions } from './utilities/env-versions'
+import logger from './utilities/logger'
+
+const outputVersionInfo = function outputVersionInfo() {
+  const versions = getEnvVersions()
+
+  logger.debug('Env Info:')
+
+  const len = _.max(_.map(_.keys(versions), (item) => item.length))
+
+  _.forEach(versions, (value, key) => {
+    logger.debug(`  ${_.padEnd(key, len)}: ${value}`)
+  })
+
+  logger.debug('')
+}
+
+outputVersionInfo()
 
 // eslint-disable-next-line no-unused-expressions
 yargs
