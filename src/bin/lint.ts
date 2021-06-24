@@ -11,6 +11,7 @@ import * as ts from '../utilities/ts'
 
 interface LintCommandOptions {
   disableTypeCheck?: boolean
+  fix?: boolean
   src?: string
 }
 
@@ -24,6 +25,7 @@ export default function lint(argv: Arguments<LintCommandOptions>): void {
     {
       src,
       disableTypeCheck: false,
+      fix: false,
     },
     argv
   )
@@ -93,6 +95,7 @@ export default function lint(argv: Arguments<LintCommandOptions>): void {
 
       return lintFiles(pattern, {
         extensions: ['js', 'json', 'ts'],
+        fix: opts.fix,
       })
     })
     .then((lintResults) => {

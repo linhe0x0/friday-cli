@@ -108,6 +108,10 @@ yargs
     'lint',
     'find problems in your JavaScript/Typescript code',
     {
+      fix: {
+        describe: 'automatically fix problems',
+        type: 'boolean',
+      },
       'disable-type-check': {
         describe: 'disable type check',
         type: 'boolean',
