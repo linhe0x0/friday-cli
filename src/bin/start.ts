@@ -6,6 +6,7 @@ import { setEnv } from '../utilities/env'
 import isValidPort from '../utilities/is-valid-port'
 import logger from '../utilities/logger'
 import parseEndpoint from '../utilities/parse-endpoint'
+import { gracefulShutdown } from '../utilities/process'
 import serve from '../utilities/serve'
 
 interface StartCommandOptions {
@@ -54,8 +55,22 @@ export default function start(argv: Arguments<StartCommandOptions>): void {
     })
   }
 
-  serve(endpoint, false)
-    .then(() => {
+  serve(endpoint)
+    .then((server) => {
+      gracefulShutdown(() => {
+        logger.info('Gracefully shutting down. Please wait...')
+        logger.debug('Closing app server')
+
+        server.close((err) => {
+          if (err) {
+            logger.error(`Failed to close the server: ${err.message}`)
+            process.exit(1)
+          }
+
+          process.exit(0)
+        })
+      })
+
       let message = 'Server is running.'
 
       if (endpoint.protocol === EndpointProtocol.UNIX) {
@@ -68,6 +83,6 @@ export default function start(argv: Arguments<StartCommandOptions>): void {
     })
     .catch((err) => {
       logger.error(`Cannot serve app:`, err.message)
-      process.exit(1)
+      process.exit(2)
     })
 }

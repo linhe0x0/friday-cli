@@ -205,7 +205,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     await originalHooks.emitHook('onClose', originalApp)
     await originalHooks.emitHook('beforeRestart', originalApp)
 
-    const newServer = await serve(endpoint, true)
+    const newServer = await serve(endpoint)
 
     await hooks.emitHook('onRestart', app)
 
@@ -252,7 +252,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
       return buildDir(opts.src, opts.src, opts.dist)
     })
     .then(() => {
-      return serve(endpoint, true)
+      return serve(endpoint)
     })
     .then((server) => {
       const { isTTY } = process.stdout
@@ -327,11 +327,16 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
 
         logger.debug('Gracefully shutting down. Please wait...')
 
-        Promise.all([closeWatcher(), closeServer()]).catch((err) => {
-          logger.warn(
-            `Failed to close opened watchers or server: ${err.message}`
-          )
-        })
+        Promise.all([closeWatcher(), closeServer()])
+          .then(() => {
+            process.exit(0)
+          })
+          .catch((err) => {
+            logger.warn(
+              `Failed to close opened watchers or server: ${err.message}`
+            )
+            process.exit(1)
+          })
       })
 
       let message = chalk.green('Friday is running:')
@@ -375,6 +380,6 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     })
     .catch((err) => {
       logger.error(err)
-      process.exit(1)
+      process.exit(2)
     })
 }

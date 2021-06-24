@@ -4,6 +4,7 @@ import yargs from 'yargs'
 
 import build from './bin/build'
 import dev from './bin/dev'
+import lint from './bin/lint'
 import start from './bin/start'
 
 // eslint-disable-next-line no-unused-expressions
@@ -102,6 +103,17 @@ yargs
       },
     },
     build
+  )
+  .command(
+    'lint',
+    'find problems in your JavaScript/Typescript code',
+    {
+      'disable-type-check': {
+        describe: 'disable type check',
+        type: 'boolean',
+      },
+    },
+    lint
   )
   .help()
   .example(

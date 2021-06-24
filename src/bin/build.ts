@@ -25,12 +25,11 @@ import watch from '../utilities/watcher'
 interface BuildCommandOptions {
   clean?: boolean
   watch?: boolean
+  src?: string
   dist?: string
 }
 
-type BuildOptions = Required<BuildCommandOptions> & {
-  src: string
-}
+type BuildOptions = Required<BuildCommandOptions>
 
 const babelOptions: TransformOptions = {
   comments: false,
@@ -108,9 +107,7 @@ const compileFiles = function compileFiles(
         })
       })
       .then(() => true)
-      .catch((err) => {
-        return err.message
-      })
+      .catch((err) => err.message)
   })
 
   return Promise.all(actions)
@@ -266,9 +263,11 @@ export function watchFilesToBuild(
       .close()
       .then(() => {
         logger.debug('Watcher has been closed')
+        process.exit(0)
       })
       .catch((err) => {
         logger.warn(`Failed to close watcher: ${err.message}`)
+        process.exit(1)
       })
   })
 }
@@ -351,7 +350,6 @@ export default function build(argv: Arguments<BuildCommandOptions>): void {
     })
     .catch((err) => {
       logger.error(`Failed to build files in ${src}: ${err.message}`)
-
-      process.exit(1)
+      process.exit(2)
     })
 }

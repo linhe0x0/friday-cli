@@ -1,13 +1,8 @@
 import http from 'http'
 
 import { Endpoint, EndpointProtocol } from '../types'
-import logger from './logger'
-import { gracefulShutdown } from './process'
 
-export default async function serve(
-  endpoint: Endpoint,
-  isDev: boolean
-): Promise<http.Server> {
+export default async function serve(endpoint: Endpoint): Promise<http.Server> {
   return new Promise(function listen(resolve, reject): void {
     // Reload app and hooks due to cache refreshing.
     // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
@@ -17,14 +12,6 @@ export default async function serve(
 
     const listenCallback = (): void => {
       resolve(server)
-
-      if (!isDev) {
-        gracefulShutdown(() => {
-          logger.info('Gracefully shutting down. Please wait...')
-          logger.debug('Closing app server')
-          server.close()
-        })
-      }
 
       hooks.emitHook('onReady', app)
     }
