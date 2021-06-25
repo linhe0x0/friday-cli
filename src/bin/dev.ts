@@ -134,6 +134,8 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
 
     logger.info(chalk.blue('Restarting server...'))
 
+    setEnv('FRIDAY_RESTARTED', 'true')
+
     const {
       createApp: createOriginalApp,
       hooks: originalHooks,
