@@ -286,7 +286,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
 
       const appWatcher = watch(
         toWatch,
-        /\.(?!.*(js|json)$).*$/, // Non js/json files.
+        /\.(?!.*(js|json)$).*$/, // Ignore non js/json files.
         _.debounce(async (_event: string, filepath: string) => {
           if (!buildable) {
             const lintResults = await lintFiles(filepath, {

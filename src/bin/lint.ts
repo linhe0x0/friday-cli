@@ -3,7 +3,7 @@ import _ from 'lodash'
 import path from 'path'
 import { Arguments } from 'yargs'
 
-import { exists, isTsFile, relative } from '../utilities/fs'
+import { exists, relative } from '../utilities/fs'
 import { lintFiles, outputLinterResult } from '../utilities/linter'
 import logger, { outputCode } from '../utilities/logger'
 import { typeCheck } from '../utilities/ts'
@@ -44,19 +44,15 @@ export default function lint(argv: Arguments<LintCommandOptions>): void {
         return null
       }
 
-      const filePattern = `${opts.src}/**`
-      const filenames: string[] = fastGlob.sync(filePattern)
-
-      const tsFiles = _.filter(filenames, (item: string): boolean =>
-        isTsFile(item)
-      )
+      const filePattern = `${opts.src}/**/*.ts`
+      const tsFiles: string[] = fastGlob.sync(filePattern)
 
       if (tsFiles.length > 0) {
         logger.info(
           `Start type-check on all typescript files in ${relativeSrc}`
         )
 
-        return typeCheck(filenames)
+        return typeCheck(tsFiles)
       }
 
       return null
