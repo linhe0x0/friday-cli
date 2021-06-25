@@ -1,3 +1,4 @@
+import chalk from 'chalk'
 import fastGlob from 'fast-glob'
 import { mkdirSync } from 'fs'
 import { writeFile } from 'fs/promises'
@@ -20,6 +21,7 @@ import {
 } from '../utilities/fs'
 import logger, { blankLine, list } from '../utilities/logger'
 import { gracefulShutdown } from '../utilities/process'
+import { watchFilesToTypeCheck, WatchProgram } from '../utilities/ts'
 import watch from '../utilities/watcher'
 
 interface BuildCommandOptions {
@@ -227,16 +229,70 @@ export function buildDir(
 
 export function watchFilesToBuild(
   toWatch: string,
+  lintBeforeBuild: boolean,
   fn: (filepath: string) => Promise<void>
 ): void {
-  const watcher = watch(
+  const filePattern = `${toWatch}/**/*.ts`
+  const tsFiles: string[] = fastGlob.sync(filePattern)
+
+  let typeCheckWatcher: WatchProgram | undefined
+
+  if (lintBeforeBuild) {
+    typeCheckWatcher = watchFilesToTypeCheck(tsFiles, {})
+  }
+
+  const buildWatcher = watch(
     toWatch,
-    /\.(?!.*(ts|json)$).*$/, // Non ts/json files.
-    _.debounce(async (_event: string, filepath: string) => {
+    /\.(?!.*(ts|json)$).*$/, // Ignore non ts/json files.
+    _.debounce((event: string, filepath: string): void => {
       const relativeFilepath = relative(filepath)
 
-      logger.debug(`File changed: ${relativeFilepath}`)
-      logger.debug(`Rebuilding file: ${relativeFilepath}`)
+      if (event === 'add') {
+        logger.debug(`File created: ${relativeFilepath}`)
+
+        if (
+          lintBeforeBuild &&
+          typeCheckWatcher &&
+          !typeCheckWatcher.useUserConfigFile
+        ) {
+          const tsFile = isTsFile(filepath)
+
+          if (tsFile) {
+            const newTsFile = tsFiles.indexOf(filepath) === -1
+
+            if (newTsFile) {
+              tsFiles.push(filepath)
+            }
+
+            typeCheckWatcher.program.close()
+
+            typeCheckWatcher = watchFilesToTypeCheck(tsFiles, {})
+          }
+        }
+      } else if (event === 'unlink') {
+        logger.debug(`File deleted: ${relativeFilepath}`)
+
+        if (
+          lintBeforeBuild &&
+          typeCheckWatcher &&
+          !typeCheckWatcher.useUserConfigFile
+        ) {
+          const index = tsFiles.indexOf(filepath)
+
+          if (index !== -1) {
+            tsFiles.splice(index, 1)
+          }
+
+          typeCheckWatcher.program.close()
+
+          typeCheckWatcher = watchFilesToTypeCheck(tsFiles, {})
+        }
+
+        return
+      }
+
+      logger.info(`${chalk.green('File changed:')} ${relativeFilepath}`)
+      logger.debug(`${chalk.blue('Rebuilding file:')} ${relativeFilepath}`)
 
       const startTime = Date.now()
 
@@ -259,8 +315,10 @@ export function watchFilesToBuild(
     logger.debug('Gracefully shutting down. Please wait...')
     logger.debug('Closing watcher')
 
-    watcher
-      .close()
+    Promise.all([
+      buildWatcher.close(),
+      typeCheckWatcher ? typeCheckWatcher.program.close() : null,
+    ])
       .then(() => {
         logger.debug('Watcher has been closed')
         process.exit(0)
@@ -340,7 +398,7 @@ export default function build(argv: Arguments<BuildCommandOptions>): void {
       if (opts.watch) {
         const toWatch = opts.src
 
-        watchFilesToBuild(toWatch, (filepath: string): Promise<void> => {
+        watchFilesToBuild(toWatch, false, (filepath: string): Promise<void> => {
           // eslint-disable-next-line @typescript-eslint/no-empty-function
           return buildFiles([filepath], opts.src, opts.dist).then(() => {})
         })

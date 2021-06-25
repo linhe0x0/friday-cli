@@ -245,18 +245,24 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
 
       const toWatch = opts.src
 
-      watchFilesToBuild(toWatch, async (filepath: string): Promise<void> => {
-        const lintResults = await lintFiles(filepath, {
-          extensions: ['js', 'json', 'ts'],
-        })
+      watchFilesToBuild(
+        toWatch,
+        true,
+        async (filepath: string): Promise<void> => {
+          logger.debug(`Find problems in ${relative(filepath)}`)
 
-        // Will throw an error if cannot pass the liner
-        outputLinterResult(lintResults)
+          const lintResults = await lintFiles(filepath, {
+            extensions: ['js', 'json', 'ts'],
+          })
 
-        logger.success('It seems that all the code is good for linter')
+          // Will throw an error if cannot pass the liner
+          outputLinterResult(lintResults)
 
-        await buildFiles([filepath], opts.src, opts.dist)
-      })
+          logger.success('It seems that all the code is good for linter')
+
+          await buildFiles([filepath], opts.src, opts.dist)
+        }
+      )
 
       logger.debug('Watching to build for file changes:', relative(opts.src))
 

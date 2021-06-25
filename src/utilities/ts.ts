@@ -1,7 +1,16 @@
+import chalk from 'chalk'
 import _ from 'lodash'
-import ts, { ParsedCommandLine } from 'typescript'
+import ts, {
+  CompilerOptions,
+  Diagnostic,
+  EmitAndSemanticDiagnosticsBuilderProgram,
+  ParsedCommandLine,
+  SemanticDiagnosticsBuilderProgram,
+  WatchOfConfigFile,
+  WatchOfFilesAndCompilerOptions,
+} from 'typescript'
 
-import logger from './logger'
+import logger, { outputCode } from './logger'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type tsConfig = Record<string, any>
@@ -47,14 +56,18 @@ const getUserConfig = function getUserConfig(): tsConfig | undefined {
   return readConfigFile(configPath)
 }
 
-export function getConfig(): ParsedCommandLine {
-  let config: tsConfig = {}
+export function getConfig(ignoreUserConfig?: boolean): ParsedCommandLine {
+  let config: tsConfig | undefined
 
-  const userConfig = getUserConfig()
+  if (!ignoreUserConfig) {
+    const userConfig = getUserConfig()
 
-  if (userConfig) {
-    config = userConfig
-  } else {
+    if (userConfig) {
+      config = userConfig
+    }
+  }
+
+  if (!config) {
     const sharedTSConfigPath = require.resolve('@sqrtthree/tsconfig')
 
     logger.debug(
@@ -76,28 +89,17 @@ export function getConfig(): ParsedCommandLine {
   )
 }
 
-interface CompileError {
+interface FormattedCompileError {
   filename: string
   line: number
   column: number
   message: string
 }
 
-export function compile(
-  filenames: string[],
-  options: ts.CompilerOptions
-): CompileError[] {
-  const config = getConfig()
-  const opts = _.assign({}, config.options, options)
-
-  const program = ts.createProgram(filenames, opts)
-  const emitResult = program.emit()
-
-  const allDiagnostics = ts
-    .getPreEmitDiagnostics(program)
-    .concat(emitResult.diagnostics)
-
-  const results = _.map(allDiagnostics, (diagnostic): CompileError => {
+const formatCompileError = function formatCompileError(
+  diagnostics: Diagnostic[]
+): FormattedCompileError[] {
+  const results = _.map(diagnostics, (diagnostic): FormattedCompileError => {
     const message = ts.flattenDiagnosticMessageText(
       diagnostic.messageText,
       '\n'
@@ -128,13 +130,170 @@ export function compile(
   return results
 }
 
+export function compile(
+  filenames: string[],
+  options: CompilerOptions
+): FormattedCompileError[] {
+  const config = getConfig()
+  const opts: CompilerOptions = _.assign({}, config.options, options)
+
+  const program = ts.createProgram(filenames, opts)
+  const emitResult = program.emit()
+
+  const allDiagnostics = ts
+    .getPreEmitDiagnostics(program)
+    .concat(emitResult.diagnostics)
+
+  return formatCompileError(allDiagnostics)
+}
+
 export function typeCheck(
   filenames: string[],
-  options?: ts.CompilerOptions
-): CompileError[] {
-  const opts: ts.CompilerOptions = _.assign({}, options, {
+  options?: CompilerOptions
+): FormattedCompileError[] {
+  const opts: CompilerOptions = _.assign({}, options, {
     noEmit: true,
   })
 
   return compile(filenames, opts)
+}
+
+const watchedDiagnostics: Diagnostic[] = []
+
+const reportDiagnostic = function reportDiagnostic(diagnostic: Diagnostic) {
+  watchedDiagnostics.push(diagnostic)
+}
+
+const reportWatchStatusChanged = function reportWatchStatusChanged(
+  diagnostic: Diagnostic
+) {
+  const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
+  const errorMatched = message.match(/\d+/)
+  const errorCount: number = errorMatched ? parseInt(errorMatched[0], 10) : 0
+
+  if (errorCount > 0) {
+    logger.error(chalk.red.bold('[type-check]'), chalk.red(message))
+  }
+
+  if (watchedDiagnostics.length) {
+    const results = formatCompileError(watchedDiagnostics)
+
+    outputCode(results)
+
+    watchedDiagnostics.length = 0
+  }
+}
+
+export interface CompileProgram {
+  useUserConfigFile: boolean
+  program:
+    | WatchOfConfigFile<EmitAndSemanticDiagnosticsBuilderProgram>
+    | WatchOfFilesAndCompilerOptions<EmitAndSemanticDiagnosticsBuilderProgram>
+}
+
+export function watchFilesToCompile(
+  rootFiles: string[],
+  options: CompilerOptions
+): CompileProgram {
+  const userConfigPath = gerUserConfigPath()
+
+  const createProgram = ts.createEmitAndSemanticDiagnosticsBuilderProgram
+
+  if (userConfigPath) {
+    const host = ts.createWatchCompilerHost(
+      userConfigPath,
+      {},
+      ts.sys,
+      createProgram,
+      reportDiagnostic,
+      reportWatchStatusChanged
+    )
+
+    const program = ts.createWatchProgram(host)
+
+    return {
+      useUserConfigFile: true,
+      program,
+    }
+  }
+
+  const config = getConfig(true)
+  const opts: CompilerOptions = _.assign({}, config.options, options)
+
+  const host = ts.createWatchCompilerHost(
+    rootFiles,
+    opts,
+    ts.sys,
+    createProgram,
+    reportDiagnostic,
+    reportWatchStatusChanged
+  )
+
+  const program = ts.createWatchProgram(host)
+
+  return {
+    useUserConfigFile: false,
+    program,
+  }
+}
+
+export interface WatchProgram {
+  useUserConfigFile: boolean
+  program:
+    | WatchOfConfigFile<SemanticDiagnosticsBuilderProgram>
+    | WatchOfFilesAndCompilerOptions<SemanticDiagnosticsBuilderProgram>
+}
+
+export function watchFilesToTypeCheck(
+  rootFiles: string[],
+  options: CompilerOptions
+): WatchProgram {
+  const optionsToExtend = {
+    noEmit: true,
+  }
+  const userConfigPath = gerUserConfigPath()
+
+  const createProgram = ts.createSemanticDiagnosticsBuilderProgram
+
+  if (userConfigPath) {
+    const host = ts.createWatchCompilerHost(
+      userConfigPath,
+      optionsToExtend,
+      ts.sys,
+      createProgram,
+      reportDiagnostic,
+      reportWatchStatusChanged
+    )
+
+    const program = ts.createWatchProgram(host)
+
+    return {
+      useUserConfigFile: true,
+      program,
+    }
+  }
+
+  const config = getConfig(true)
+  const opts: CompilerOptions = _.assign(
+    {},
+    config.options,
+    options,
+    optionsToExtend
+  )
+
+  const host = ts.createWatchCompilerHost(
+    rootFiles,
+    opts,
+    ts.sys,
+    createProgram,
+    reportDiagnostic,
+    reportWatchStatusChanged
+  )
+
+  const program = ts.createWatchProgram(host)
+
+  return {
+    useUserConfigFile: false,
+    program,
+  }
 }
