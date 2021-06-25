@@ -13,8 +13,9 @@ import { Endpoint, EndpointProtocol } from '../types'
 import { getConfigDir, isConfigFile } from '../utilities/config'
 import { getEntryFile } from '../utilities/entry'
 import { setEnv } from '../utilities/env'
-import { relative } from '../utilities/fs'
+import { existsSync, relative } from '../utilities/fs'
 import isValidPort from '../utilities/is-valid-port'
+import { lintFiles, outputLinterResult } from '../utilities/linter'
 import logger from '../utilities/logger'
 import parseEndpoint from '../utilities/parse-endpoint'
 import { gracefulShutdown } from '../utilities/process'
@@ -214,11 +215,17 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     return newServer
   }
 
+  const buildable = existsSync(opts.src)
+
   getPort({
     port: endpoint.port,
   })
     .then((result): Promise<void> | void => {
       endpoint.port = result
+
+      if (!buildable) {
+        return undefined
+      }
 
       if (!opts.clean) {
         logger.debug('Skip clean task due to --no-clean option')
@@ -228,15 +235,27 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
       return cleanOutput(opts.dist)
     })
     .then((): Promise<void> | void => {
+      if (!buildable) {
+        return undefined
+      }
+
       if (!opts.build) {
         return undefined
       }
 
       const toWatch = opts.src
 
-      watchFilesToBuild(toWatch, (filepath: string): Promise<void> => {
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        return buildFiles([filepath], opts.src, opts.dist).then(() => {})
+      watchFilesToBuild(toWatch, async (filepath: string): Promise<void> => {
+        const lintResults = await lintFiles(filepath, {
+          extensions: ['js', 'json', 'ts'],
+        })
+
+        // Will throw an error if cannot pass the liner
+        outputLinterResult(lintResults)
+
+        logger.success('It seems that all the code is good for linter')
+
+        await buildFiles([filepath], opts.src, opts.dist)
       })
 
       logger.debug('Watching to build for file changes:', relative(opts.src))
@@ -269,6 +288,17 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
         toWatch,
         /\.(?!.*(js|json)$).*$/, // Non js/json files.
         _.debounce(async (_event: string, filepath: string) => {
+          if (!buildable) {
+            const lintResults = await lintFiles(filepath, {
+              extensions: ['js', 'json'],
+            })
+
+            // Will throw an error if cannot pass the liner
+            outputLinterResult(lintResults)
+
+            logger.success('It seems that all the code is good for linter')
+          }
+
           try {
             currentServer = await restartServer(
               appWatcher,

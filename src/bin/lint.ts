@@ -1,13 +1,12 @@
-import chalk from 'chalk'
 import fastGlob from 'fast-glob'
 import _ from 'lodash'
 import path from 'path'
 import { Arguments } from 'yargs'
 
 import { exists, isTsFile, relative } from '../utilities/fs'
-import { lintFiles } from '../utilities/linter'
-import logger, { blankLine, outputCode } from '../utilities/logger'
-import * as ts from '../utilities/ts'
+import { lintFiles, outputLinterResult } from '../utilities/linter'
+import logger, { outputCode } from '../utilities/logger'
+import { typeCheck } from '../utilities/ts'
 
 interface LintCommandOptions {
   disableTypeCheck?: boolean
@@ -57,7 +56,7 @@ export default function lint(argv: Arguments<LintCommandOptions>): void {
           `Start type-check on all typescript files in ${relativeSrc}`
         )
 
-        return ts.typeCheck(filenames)
+        return typeCheck(filenames)
       }
 
       return null
@@ -68,10 +67,11 @@ export default function lint(argv: Arguments<LintCommandOptions>): void {
       }
 
       if (results.length) {
-        const fileCount = _.uniq(_.map(results, (item) => item.filename)).length
         const total = results.length
+        const fileCount = _.uniq(_.map(results, (item) => item.filename)).length
 
         outputCode(results)
+
         logger.error(
           `${total} ${total > 1 ? 'problems' : 'problem'} in ${fileCount} ${
             fileCount > 1 ? 'files' : 'file'
@@ -99,34 +99,13 @@ export default function lint(argv: Arguments<LintCommandOptions>): void {
       })
     })
     .then((lintResults) => {
-      // eslint-disable-next-line no-console
-      console.log(lintResults.message)
-
-      if (lintResults.errorCount > 0) {
-        logger.info(
-          `Search for the ${chalk.red.underline(
-            'keywords'
-          )} to learn more about each error.`
-        )
-        blankLine()
+      try {
+        outputLinterResult(lintResults)
+      } catch (err) {
         process.exit(1)
       }
 
-      if (lintResults.warningCount > 0) {
-        logger.info(
-          `Search for the ${chalk.yellow.underline(
-            'keywords'
-          )} to learn more about each warning.`
-        )
-        logger.info(
-          `To ignore, add ${chalk.cyan(
-            '// eslint-disable-next-line'
-          )} to the line before.`
-        )
-        blankLine()
-      }
-
-      logger.success('All the code passed linter')
+      logger.success('All the code passed the linter')
     })
     .catch((err) => {
       logger.error(`Failed to lint files:`, err.message)

@@ -1,5 +1,8 @@
+import chalk from 'chalk'
 import { ESLint } from 'eslint'
 import _ from 'lodash'
+
+import logger, { blankLine } from './logger'
 
 interface LintResult {
   errorCount: number
@@ -35,4 +38,36 @@ export function lintFiles(
       }
     })
   })
+}
+
+export function outputLinterResult(lintResults: LintResult): void {
+  if (lintResults.message) {
+    // eslint-disable-next-line no-console
+    console.log(lintResults.message)
+  }
+
+  if (lintResults.errorCount > 0) {
+    logger.info(
+      `Search for the ${chalk.red.underline(
+        'keywords'
+      )} to learn more about each error.`
+    )
+    blankLine()
+
+    throw new Error('Cannot pass the linter')
+  }
+
+  if (lintResults.warningCount > 0) {
+    logger.info(
+      `Search for the ${chalk.yellow.underline(
+        'keywords'
+      )} to learn more about each warning.`
+    )
+    logger.info(
+      `To ignore, add ${chalk.cyan(
+        '// eslint-disable-next-line'
+      )} to the line before.`
+    )
+    blankLine()
+  }
 }

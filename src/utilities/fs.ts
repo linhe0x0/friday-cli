@@ -1,4 +1,4 @@
-import { constants, createReadStream, createWriteStream } from 'fs'
+import { accessSync, constants, createReadStream, createWriteStream } from 'fs'
 import { access, mkdir } from 'fs/promises'
 import path from 'path'
 import rimraf from 'rimraf'
@@ -11,6 +11,15 @@ export function exists(target: string): Promise<boolean> {
     .catch(() => {
       return false
     })
+}
+
+export function existsSync(target: string): boolean {
+  try {
+    accessSync(target, constants.W_OK)
+    return true
+  } catch (err) {
+    return false
+  }
 }
 
 export function mkdirIfNotExists(dir: string): Promise<string> {
