@@ -267,6 +267,8 @@ export function watchFilesToBuild(
             typeCheckWatcher.program.close()
 
             typeCheckWatcher = watchFilesToTypeCheck(tsFiles, {})
+
+            logger.debug('Restart new type-check watcher due to file creation')
           }
         }
       } else if (event === 'unlink') {
@@ -286,6 +288,8 @@ export function watchFilesToBuild(
           typeCheckWatcher.program.close()
 
           typeCheckWatcher = watchFilesToTypeCheck(tsFiles, {})
+
+          logger.debug('Restart new type-check watcher due to file deletion')
         }
 
         return

@@ -10,7 +10,8 @@ import ts, {
   WatchOfFilesAndCompilerOptions,
 } from 'typescript'
 
-import logger, { outputCode } from './logger'
+import { outputCode } from './code-frame'
+import logger from './logger'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type tsConfig = Record<string, any>
@@ -160,28 +161,42 @@ export function typeCheck(
 
 const watchedDiagnostics: Diagnostic[] = []
 
-const reportDiagnostic = function reportDiagnostic(diagnostic: Diagnostic) {
+const reportDiagnostic = function reportDiagnostic(
+  diagnostic: Diagnostic
+): void {
+  // File '/src/app.ts' not found error.
+  // Ignore this error because in most cases it is caused by deleting a file
+  // that is being watched but the service has not yet been restarted and updated
+  // https://github.com/microsoft/TypeScript/blob/9708022537be5b8bd046ad1b901521150984aafd/src/compiler/diagnosticMessages.json#L4150
+  if (diagnostic.code === 6053) {
+    return
+  }
+
   watchedDiagnostics.push(diagnostic)
 }
 
 const reportWatchStatusChanged = function reportWatchStatusChanged(
   diagnostic: Diagnostic
-) {
+): void {
+  if (!watchedDiagnostics.length) {
+    return
+  }
+
   const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
   const errorMatched = message.match(/\d+/)
   const errorCount: number = errorMatched ? parseInt(errorMatched[0], 10) : 0
+
+  logger.debug(`[tcs:${diagnostic.code}]: ${diagnostic.messageText}`)
 
   if (errorCount > 0) {
     logger.error(chalk.red.bold('[type-check]'), chalk.red(message))
   }
 
-  if (watchedDiagnostics.length) {
-    const results = formatCompileError(watchedDiagnostics)
+  const results = formatCompileError(watchedDiagnostics)
 
-    outputCode(results)
+  outputCode(results)
 
-    watchedDiagnostics.length = 0
-  }
+  watchedDiagnostics.length = 0
 }
 
 export interface CompileProgram {

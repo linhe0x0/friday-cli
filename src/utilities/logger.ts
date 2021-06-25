@@ -2,9 +2,6 @@ import chalk from 'chalk'
 import consola, { LogLevel } from 'consola'
 import _ from 'lodash'
 
-import { outputCodeFrameColumns } from './code-frame'
-import { relative } from './fs'
-
 const isVerbose = _.includes(process.argv, '--verbose')
 
 const logger = consola.create({
@@ -38,30 +35,4 @@ export function divider(title?: string): void {
 
   // eslint-disable-next-line no-console
   console.log(`${heading}${dash}`)
-}
-
-interface OutputCodeOption {
-  filename: string
-  line: number
-  column: number
-  message: string
-}
-
-export function outputCode(results: OutputCodeOption[]): void {
-  _.forEach(results, (item) => {
-    const code = outputCodeFrameColumns(
-      item.filename,
-      item.line,
-      item.column,
-      item.message
-    )
-
-    const relativeFilename = relative(item.filename)
-
-    divider(`File: ${relativeFilename}`)
-    blankLine()
-    // eslint-disable-next-line no-console
-    console.log(code)
-    blankLine()
-  })
 }

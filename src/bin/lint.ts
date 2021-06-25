@@ -3,9 +3,10 @@ import _ from 'lodash'
 import path from 'path'
 import { Arguments } from 'yargs'
 
+import { outputCode } from '../utilities/code-frame'
 import { exists, relative } from '../utilities/fs'
 import { lintFiles, outputLinterResult } from '../utilities/linter'
-import logger, { outputCode } from '../utilities/logger'
+import logger from '../utilities/logger'
 import { typeCheck } from '../utilities/ts'
 
 interface LintCommandOptions {
