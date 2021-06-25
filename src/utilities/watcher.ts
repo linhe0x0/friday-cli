@@ -4,7 +4,7 @@ export default function watch(
   target: string,
   ignored: string | RegExp | RegExp[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  callback: (...args: any) => any
+  callback: (...args: any) => void
 ): chokidar.FSWatcher {
   const watchConfig: chokidar.WatchOptions = {
     ignoreInitial: true,
