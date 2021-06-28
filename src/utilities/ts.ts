@@ -1,4 +1,3 @@
-import chalk from 'chalk'
 import _ from 'lodash'
 import ts, {
   CompilerOptions,
@@ -12,16 +11,17 @@ import ts, {
 
 import logger from '../logger'
 import { outputCode } from '../logger/code-frame'
+import { danger, error } from '../logger/colorful'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type tsConfig = Record<string, any>
 
 const readConfigFile = function readConfigFile(filename: string): tsConfig {
-  const { config, error } = ts.readConfigFile(filename, ts.sys.readFile)
+  const { config, error: err } = ts.readConfigFile(filename, ts.sys.readFile)
 
-  if (error) {
+  if (err) {
     throw new Error(
-      `Cannot read a tsconfig.json file at the specified ${filename}: ${error.messageText}`
+      `Cannot read a tsconfig.json file at the specified ${filename}: ${err.messageText}`
     )
   }
 
@@ -189,7 +189,7 @@ const reportWatchStatusChanged = function reportWatchStatusChanged(
   logger.debug(`[tcs:${diagnostic.code}]: ${diagnostic.messageText}`)
 
   if (errorCount > 0) {
-    logger.error(chalk.red.bold('[type-check]'), chalk.red(message))
+    logger.error(danger('[type-check]'), error(message))
   }
 
   const results = formatCompileError(watchedDiagnostics)

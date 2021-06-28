@@ -1,4 +1,3 @@
-import chalk from 'chalk'
 import { readFileSync } from 'fs'
 import _ from 'lodash'
 
@@ -7,6 +6,7 @@ import { codeFrameColumns } from '@babel/code-frame'
 import { relative } from '../utilities/fs'
 // eslint-disable-next-line import/no-useless-path-segments
 import logger, { blankLine, divider } from './'
+import { danger, text } from './colorful'
 
 export function outputCodeFrameColumns(
   filename: string,
@@ -23,9 +23,9 @@ export function outputCodeFrameColumns(
   }
 
   if (!content) {
-    return `${chalk.red.bold('>')} ${chalk.gray('1 |')}\n    ${chalk.gray(
-      '|'
-    )} ${chalk.red.bold(`^ ${message}`)}`
+    return `${danger('>')} ${text('1 |')}\n    ${text('|')} ${danger(
+      `^ ${message}`
+    )}`
   }
 
   const result = codeFrameColumns(

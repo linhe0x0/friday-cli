@@ -1,6 +1,7 @@
-import chalk from 'chalk'
 import consola, { LogLevel } from 'consola'
 import _ from 'lodash'
+
+import { text } from './colorful'
 
 const isVerbose = _.includes(process.argv, '--verbose')
 
@@ -27,7 +28,7 @@ export function list(data: string[], padding = 2): void {
 export function divider(title?: string): void {
   const len = (process.stdout.columns || 80) - (title ? title.length + 1 : 0)
   const heading = title ? `${title} ` : ''
-  const dash = chalk.grey(`${_.repeat('-', len)}`)
+  const dash = text(`${_.repeat('-', len)}`)
 
   // eslint-disable-next-line no-console
   console.log(`${heading}${dash}`)

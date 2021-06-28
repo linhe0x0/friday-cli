@@ -2,6 +2,7 @@ import _ from 'lodash'
 import readPkgUp, { NormalizedReadResult } from 'read-pkg-up'
 
 import logger, { blankLine, list } from '../logger'
+import { error, tips } from '../logger/colorful'
 
 export function getPkg(cwd?: string): NormalizedReadResult | undefined {
   const result = readPkgUp.sync({ cwd })
@@ -63,11 +64,13 @@ export function checkDependencies(names: string[]): Record<string, boolean> {
 
 export function outputMissingRequiredDependencies(
   missingDependencies: string[],
-  command: string,
+  subCommand: string,
   isDev = true
 ): void {
   logger.error(
-    `To use ${command}, the following dependencies are required but not found in package.json file.`
+    error(
+      `To use ${subCommand}, the following dependencies are required but not found in package.json file.`
+    )
   )
 
   list(missingDependencies)
@@ -84,7 +87,9 @@ export function outputMissingRequiredDependencies(
   console.log(`    ${install} ${dependencies}`)
   blankLine()
 
-  logger.info(`Once installed, run friday ${command} again.`)
+  const command = tips(`friday ${subCommand}`)
+
+  logger.info(`Once installed, run ${command} again.`)
 
   blankLine()
 }

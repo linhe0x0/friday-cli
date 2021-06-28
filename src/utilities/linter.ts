@@ -1,8 +1,8 @@
-import chalk from 'chalk'
 import { ESLint } from 'eslint'
 import _ from 'lodash'
 
 import logger, { blankLine } from '../logger'
+import { error, link, tips, warn } from '../logger/colorful'
 
 interface LintResult {
   errorCount: number
@@ -48,8 +48,8 @@ export function outputLinterResult(lintResults: LintResult): void {
 
   if (lintResults.errorCount > 0) {
     logger.info(
-      `Search for the ${chalk.red.underline(
-        'keywords'
+      `Search for the ${link(
+        error('keywords')
       )} to learn more about each error.`
     )
     blankLine()
@@ -59,12 +59,12 @@ export function outputLinterResult(lintResults: LintResult): void {
 
   if (lintResults.warningCount > 0) {
     logger.info(
-      `Search for the ${chalk.yellow.underline(
-        'keywords'
+      `Search for the ${link(
+        warn('keywords')
       )} to learn more about each warning.`
     )
     logger.info(
-      `To ignore, add ${chalk.cyan(
+      `To ignore, add ${tips(
         '// eslint-disable-next-line'
       )} to the line before.`
     )

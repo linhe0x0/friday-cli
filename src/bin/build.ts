@@ -1,4 +1,3 @@
-import chalk from 'chalk'
 import fastGlob from 'fast-glob'
 import { mkdirSync } from 'fs'
 import { writeFile } from 'fs/promises'
@@ -10,6 +9,7 @@ import { Arguments } from 'yargs'
 import { transformFileAsync, TransformOptions } from '@babel/core'
 
 import logger, { blankLine, list } from '../logger'
+import { info, success } from '../logger/colorful'
 import {
   checkDependencies,
   outputMissingRequiredDependencies,
@@ -298,8 +298,8 @@ export function watchFilesToBuild(
         return
       }
 
-      logger.info(`${chalk.green('File changed:')} ${relativeFilepath}`)
-      logger.debug(`${chalk.blue('Rebuilding file:')} ${relativeFilepath}`)
+      logger.info(`${success('File changed:')} ${relativeFilepath}`)
+      logger.debug(`${info('Rebuilding file:')} ${relativeFilepath}`)
 
       const startTime = Date.now()
 

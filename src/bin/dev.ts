@@ -1,5 +1,4 @@
 import boxen from 'boxen'
-import chalk from 'chalk'
 import chokidar from 'chokidar'
 import clipboardy from 'clipboardy'
 import getPort from 'get-port'
@@ -10,6 +9,7 @@ import path from 'path'
 import { Arguments } from 'yargs'
 
 import logger from '../logger'
+import { error, info, strong, success, warn } from '../logger/colorful'
 import { Endpoint, EndpointProtocol } from '../types'
 import { getConfigDir, isConfigFile } from '../utilities/config'
 import { getEntryFile } from '../utilities/entry'
@@ -122,17 +122,17 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     const relativeFilepath = relative(filepath)
     const configChanged = isConfigFile(filepath)
 
-    logger.info(`${chalk.green('File changed:')} ${relativeFilepath}`)
+    logger.info(`${success('File changed:')} ${relativeFilepath}`)
 
     if (configChanged) {
       logger.info(
-        `${chalk.yellow(
+        `${warn(
           'Reload due to configuration file changes:'
         )} ${relativeFilepath}`
       )
     }
 
-    logger.info(chalk.blue('Restarting server...'))
+    logger.info(info('Restarting server...'))
 
     setEnv('FRIDAY_RESTARTED', 'true')
 
@@ -212,7 +212,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
 
     await hooks.emitHook('onRestart', app)
 
-    logger.info(chalk.green('Server is ready.'))
+    logger.info(success('Server is ready.'))
 
     return newServer
   }
@@ -377,10 +377,10 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
           })
       })
 
-      let message = chalk.green('Friday is running:')
+      let message = success('Friday is running:')
 
       if (originalPort !== usedPort) {
-        message += ` ${chalk.red(
+        message += ` ${error(
           `(on port ${usedPort}, because ${originalPort} is already in use.)`
         )}`
       }
@@ -392,10 +392,10 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
         : `http://${endpoint.host}:${usedPort}`
       const networkURL = `http://${ipAddress}:${usedPort}`
 
-      message += `• ${chalk.bold('Local:           ')} ${localURL}\n`
+      message += `• ${strong('Local:           ')} ${localURL}\n`
 
       if (!isUnixProtocol) {
-        message += `• ${chalk.bold('On Your Network: ')} ${networkURL}\n\n`
+        message += `• ${strong('On Your Network: ')} ${networkURL}\n\n`
       }
 
       if (isTTY) {
