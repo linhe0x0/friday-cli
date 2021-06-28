@@ -10,7 +10,10 @@ import { Arguments } from 'yargs'
 import { transformFileAsync, TransformOptions } from '@babel/core'
 
 import logger, { blankLine, list } from '../logger'
-import { checkDependencies } from '../utilities/dependency'
+import {
+  checkDependencies,
+  outputMissingRequiredDependencies,
+} from '../utilities/dependency'
 import { setEnv } from '../utilities/env'
 import {
   copyFile,
@@ -365,21 +368,7 @@ export default function build(argv: Arguments<BuildCommandOptions>): void {
   )
 
   if (missingDependencies.length) {
-    logger.error(
-      'Some dependencies are required but not found in package.json file:'
-    )
-
-    list(missingDependencies)
-
-    blankLine()
-
-    logger.info(
-      `Run npm i -D ${missingDependencies.join(
-        ' '
-      )} to install missing dependencies.`
-    )
-
-    blankLine()
+    outputMissingRequiredDependencies(missingDependencies, 'build', true)
 
     process.exit(1)
   }
