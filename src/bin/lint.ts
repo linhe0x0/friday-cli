@@ -5,6 +5,7 @@ import { Arguments } from 'yargs'
 
 import logger from '../logger'
 import { outputCode } from '../logger/code-frame'
+import { success } from '../logger/colorful'
 import { exists, relative } from '../utilities/fs'
 import { lintFiles, outputLinterResult } from '../utilities/linter'
 import { typeCheck } from '../utilities/ts'
@@ -77,7 +78,7 @@ export default function lint(argv: Arguments<LintCommandOptions>): void {
         process.exit(1)
       }
 
-      logger.success('All the code passed type-check')
+      logger.success(success('All the code passed type-check'))
     })
     .then(() => {
       const targetDir = srcDirExists ? opts.src : process.cwd()
@@ -102,7 +103,7 @@ export default function lint(argv: Arguments<LintCommandOptions>): void {
         process.exit(1)
       }
 
-      logger.success('All the code passed the linter')
+      logger.success(success('All the code passed the linter'))
     })
     .catch((err) => {
       logger.error(`Failed to lint files:`, err.message)

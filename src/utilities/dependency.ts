@@ -84,7 +84,7 @@ export function outputMissingRequiredDependencies(
 
   blankLine()
   // eslint-disable-next-line no-console
-  console.log(`    ${install} ${dependencies}`)
+  console.log(tips(`    ${install} ${dependencies}`))
   blankLine()
 
   const command = tips(`friday ${subCommand}`)

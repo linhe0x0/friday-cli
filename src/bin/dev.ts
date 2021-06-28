@@ -9,7 +9,7 @@ import path from 'path'
 import { Arguments } from 'yargs'
 
 import logger from '../logger'
-import { error, info, strong, success, warn } from '../logger/colorful'
+import { error, info, strong, success, tips, warn } from '../logger/colorful'
 import { Endpoint, EndpointProtocol } from '../types'
 import { getConfigDir, isConfigFile } from '../utilities/config'
 import { getEntryFile } from '../utilities/entry'
@@ -406,7 +406,11 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
         }
       }
 
-      message += `And watching for file changes: ./${relative(toWatch)}`
+      const relativeToWatch = relative(toWatch)
+
+      message += `And watching for file changes: ${tips(
+        `./${relativeToWatch}`
+      )}`
 
       const box = boxen(message, {
         padding: 1,

@@ -225,7 +225,7 @@ export function buildDir(
           actions += ` and copied ${copied} ${copied !== 1 ? 'files' : 'file'}`
         }
 
-        logger.success(`Successfully ${actions} with Babel (${diff}).`)
+        logger.success(success(`Successfully ${actions} with Babel (${diff}).`))
       }
     })
 }
