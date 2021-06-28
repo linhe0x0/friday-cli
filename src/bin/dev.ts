@@ -161,7 +161,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
           return true
         }
 
-        const distDir = path.join(process.cwd(), 'dist')
+        const distDir = path.join(process.cwd(), opts.dist)
 
         if (item.indexOf(distDir) !== -1) {
           return true
