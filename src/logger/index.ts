@@ -16,15 +16,11 @@ export function blankLine(): void {
 }
 
 export function list(data: string[], padding = 2): void {
-  let padString = ''
-
-  for (let i = 0; i < padding; i += 1) {
-    padString += ' '
-  }
+  const padString = _.repeat(' ', padding)
 
   _.forEach(data, (item) => {
     // eslint-disable-next-line no-console
-    console.log(`${padString}${item}`)
+    console.log(`${padString} - ${item}`)
   })
 }
 

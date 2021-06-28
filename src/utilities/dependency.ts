@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import readPkgUp, { NormalizedReadResult } from 'read-pkg-up'
 
-import logger from './logger'
+import logger from '../logger'
 
 export function getPkg(cwd?: string): NormalizedReadResult | undefined {
   const result = readPkgUp.sync({ cwd })

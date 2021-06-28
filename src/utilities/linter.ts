@@ -2,7 +2,7 @@ import chalk from 'chalk'
 import { ESLint } from 'eslint'
 import _ from 'lodash'
 
-import logger, { blankLine } from './logger'
+import logger, { blankLine } from '../logger'
 
 interface LintResult {
   errorCount: number

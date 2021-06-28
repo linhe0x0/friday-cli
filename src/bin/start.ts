@@ -1,10 +1,10 @@
 import _ from 'lodash'
 import { Arguments } from 'yargs'
 
+import logger from '../logger'
 import { Endpoint, EndpointProtocol } from '../types'
 import { setEnv } from '../utilities/env'
 import isValidPort from '../utilities/is-valid-port'
-import logger from '../utilities/logger'
 import parseEndpoint from '../utilities/parse-endpoint'
 import { gracefulShutdown } from '../utilities/process'
 import serve from '../utilities/serve'

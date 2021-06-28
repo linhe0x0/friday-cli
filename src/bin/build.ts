@@ -9,6 +9,7 @@ import { Arguments } from 'yargs'
 
 import { transformFileAsync, TransformOptions } from '@babel/core'
 
+import logger, { blankLine, list } from '../logger'
 import { checkDependencies } from '../utilities/dependency'
 import { setEnv } from '../utilities/env'
 import {
@@ -19,7 +20,6 @@ import {
   relative,
   removeFiles,
 } from '../utilities/fs'
-import logger, { blankLine, list } from '../utilities/logger'
 import { gracefulShutdown } from '../utilities/process'
 import { watchFilesToTypeCheck, WatchProgram } from '../utilities/ts'
 import watch from '../utilities/watcher'

@@ -4,8 +4,9 @@ import _ from 'lodash'
 
 import { codeFrameColumns } from '@babel/code-frame'
 
-import { relative } from './fs'
-import logger, { blankLine, divider } from './logger'
+import { relative } from '../utilities/fs'
+// eslint-disable-next-line import/no-useless-path-segments
+import logger, { blankLine, divider } from './'
 
 export function outputCodeFrameColumns(
   filename: string,
