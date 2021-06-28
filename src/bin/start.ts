@@ -67,6 +67,7 @@ export default function start(argv: Arguments<StartCommandOptions>): void {
             process.exit(1)
           }
 
+          logger.success('Closed successfully')
           process.exit(0)
         })
       })

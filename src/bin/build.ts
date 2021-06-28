@@ -328,6 +328,7 @@ export function watchFilesToBuild(
     ])
       .then(() => {
         logger.debug('Watcher has been closed')
+        logger.success('Closed successfully')
         process.exit(0)
       })
       .catch((err) => {

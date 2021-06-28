@@ -367,6 +367,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
 
         Promise.all([closeWatcher(), closeServer()])
           .then(() => {
+            logger.success('Closed successfully')
             process.exit(0)
           })
           .catch((err) => {
