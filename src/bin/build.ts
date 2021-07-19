@@ -92,9 +92,7 @@ const compileFiles = function compileFiles(
   baseDir: string,
   outputDir: string
 ): Promise<(boolean | string)[]> {
-  const actions = _.map(filenames, (item: string): Promise<
-    boolean | string
-  > => {
+  const actions = _.map(filenames, (item): Promise<boolean | string> => {
     const to = getMirrorFile(item, baseDir, outputDir, '.js')
 
     logger.debug(`Compile file: ${relative(item)} => ${to}`)
