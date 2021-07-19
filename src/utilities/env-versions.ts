@@ -1,6 +1,20 @@
 import path from 'path'
 import readPkgUp from 'read-pkg-up'
 
+const getPackageVersion = function getPackageVersion(name: string): string {
+  const pkgPath = require.resolve(name)
+
+  const result = readPkgUp.sync({
+    cwd: path.dirname(pkgPath),
+  })
+
+  if (!result) {
+    return ''
+  }
+
+  return result.packageJson.version
+}
+
 export function getEnvVersions(): Record<string, string> {
   const versions: Record<string, string> = {}
 
@@ -15,15 +29,9 @@ export function getEnvVersions(): Record<string, string> {
     versions['friday-cli'] = pkgResult.packageJson.version
   }
 
-  const fridayPath = require.resolve('@sqrtthree/friday')
-
-  const fridayResult = readPkgUp.sync({
-    cwd: path.dirname(fridayPath),
-  })
-
-  if (fridayResult) {
-    versions.friday = fridayResult.packageJson.version
-  }
+  versions.friday = getPackageVersion('@sqrtthree/friday')
+  versions.babel = getPackageVersion('@babel/core')
+  versions.typescript = getPackageVersion('typescript')
 
   return versions
 }
