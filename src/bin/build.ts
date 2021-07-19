@@ -9,7 +9,7 @@ import { Arguments } from 'yargs'
 import { transformFileAsync, TransformOptions } from '@babel/core'
 
 import logger, { blankLine, list } from '../logger'
-import { info, success } from '../logger/colorful'
+import { info, success, tips } from '../logger/colorful'
 import {
   checkDependencies,
   outputMissingRequiredDependencies,
@@ -95,7 +95,7 @@ const compileFiles = function compileFiles(
   const actions = _.map(filenames, (item): Promise<boolean | string> => {
     const to = getMirrorFile(item, baseDir, outputDir, '.js')
 
-    logger.debug(`Compile file: ${relative(item)} => ${to}`)
+    logger.debug(`Compile file: ${tips(relative(item))} => ${tips(to)}`)
 
     return compile(item)
       .then((compileResult: string | null) => {
@@ -136,7 +136,7 @@ const checkRequiredDependencies = function checkRequiredDependencies() {
 }
 
 export function cleanOutput(target: string): Promise<void> {
-  logger.debug(`Deleting the outputs of all projects in ${target}`)
+  logger.debug(`Deleting the outputs of all projects in ${tips(target)}`)
 
   return removeFiles(target)
 }
@@ -378,9 +378,11 @@ export default function build(argv: Arguments<BuildCommandOptions>): void {
     setEnv('NODE_ENV', 'production')
   }
 
-  logger.debug(`Source dir: ${src}`)
-  logger.debug(`Output dir: ${dist}`)
-  logger.info(`Compile files: ${relative(src)} => ${relative(dist)}`)
+  logger.debug(`Source dir: ${tips(src)}`)
+  logger.debug(`Output dir: ${tips(dist)}`)
+  logger.info(
+    `Compile files: ${tips(relative(src))} => ${tips(relative(dist))}`
+  )
 
   const cleanAction: Promise<void> = opts.clean
     ? cleanOutput(dist)

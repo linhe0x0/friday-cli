@@ -8,17 +8,21 @@ import dev from './bin/dev'
 import lint from './bin/lint'
 import start from './bin/start'
 import logger from './logger'
+import { info } from './logger/colorful'
 import { getEnvVersions } from './utilities/env-versions'
 
 const outputVersionInfo = function outputVersionInfo() {
   const versions = getEnvVersions()
 
-  logger.debug('Env Info:')
+  logger.debug(info('Env Info:'))
+  logger.debug('')
 
   const len = _.max(_.map(_.keys(versions), (item) => item.length))
 
   _.forEach(versions, (value, key) => {
-    logger.debug(`  ${_.padEnd(key, len)}: ${value}`)
+    const name = _.padEnd(key, len)
+
+    logger.debug(info(`  ${name}: ${value}`))
   })
 
   logger.debug('')

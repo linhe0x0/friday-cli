@@ -9,7 +9,7 @@ export function getPkg(cwd?: string): NormalizedReadResult | undefined {
 
   logger.debug(
     'Read the closest package.json file:',
-    result ? result.path : 'not found'
+    result ? tips(result.path) : 'not found'
   )
 
   return result
