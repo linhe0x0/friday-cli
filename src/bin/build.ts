@@ -116,6 +116,25 @@ const compileFiles = function compileFiles(
   return Promise.all(actions)
 }
 
+const checkRequiredDependencies = function checkRequiredDependencies() {
+  logger.debug('Checking required dependencies')
+
+  const dependencies = checkDependencies([
+    '@babel/preset-env',
+    '@babel/preset-typescript',
+  ])
+  const missingDependencies = _.filter(
+    _.keys(dependencies),
+    (item: string): boolean => !dependencies[item]
+  )
+
+  if (missingDependencies.length) {
+    outputMissingRequiredDependencies(missingDependencies, 'build', true)
+
+    process.exit(1)
+  }
+}
+
 export function cleanOutput(target: string): Promise<void> {
   logger.debug(`Deleting the outputs of all projects in ${target}`)
 
@@ -127,6 +146,8 @@ export function buildFiles(
   baseDir: string,
   outputDir: string
 ): Promise<(boolean | string)[]> {
+  checkRequiredDependencies()
+
   const tsFiles = _.filter(filenames, (item: string): boolean => isTsFile(item))
   const otherFiles = _.filter(
     filenames,
@@ -143,6 +164,8 @@ export function buildDir(
   baseDir: string,
   outputDir: string
 ): Promise<void> {
+  checkRequiredDependencies()
+
   const filePattern = `${target}/**`
   const filenames: string[] = fastGlob.sync(filePattern)
 
@@ -353,23 +376,6 @@ export default function build(argv: Arguments<BuildCommandOptions>): void {
 
   if (_.isNil(process.env.NODE_ENV)) {
     setEnv('NODE_ENV', 'production')
-  }
-
-  logger.debug('Checking required dependencies')
-
-  const dependencies = checkDependencies([
-    '@babel/preset-env',
-    '@babel/preset-typescript',
-  ])
-  const missingDependencies = _.filter(
-    _.keys(dependencies),
-    (item: string): boolean => !dependencies[item]
-  )
-
-  if (missingDependencies.length) {
-    outputMissingRequiredDependencies(missingDependencies, 'build', true)
-
-    process.exit(1)
   }
 
   logger.debug(`Source dir: ${src}`)
