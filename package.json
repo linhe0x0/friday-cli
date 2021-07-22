@@ -18,6 +18,12 @@
     "prepublishOnly": "npm run build",
     "prepare": "husky install"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "files": [
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sqrthree/friday-cli.git"
@@ -29,9 +35,6 @@
     "url": "https://github.com/sqrthree/friday-cli/issues"
   },
   "homepage": "https://github.com/sqrthree/friday-cli#readme",
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
-  },
   "lint-staged": {
     "src/**/*.ts": "npm run lint"
   },
