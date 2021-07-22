@@ -57,7 +57,7 @@
   },
   "devDependencies": {
     "@sqrtthree/eslint-config-ts": "~0.1.0",
-    "@sqrtthree/friday": "~1.1.1",
+    "@sqrtthree/friday": "~1.2.0",
     "@sqrtthree/prettier-config": "~2.0.1",
     "@types/eslint": "~7.28.0",
     "@types/lodash": "~4.14.171",
@@ -69,6 +69,6 @@
     "prettier": "~2.3.2"
   },
   "peerDependencies": {
-    "@sqrtthree/friday": ">= 1.1.1"
+    "@sqrtthree/friday": ">= 1.2.0"
   }
 }
