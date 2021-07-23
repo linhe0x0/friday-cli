@@ -60,7 +60,6 @@ export default function start(argv: Arguments<StartCommandOptions>): void {
       gracefulShutdown(() => {
         logger.info('Gracefully shutting down. Please wait...')
 
-        // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
         const { createApp, hooks } = require('@sqrtthree/friday')
         const app = createApp()
 

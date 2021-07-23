@@ -139,7 +139,6 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     const {
       createApp: createOriginalApp,
       hooks: originalHooks,
-      // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
     } = require('@sqrtthree/friday')
     const originalApp = createOriginalApp()
 
@@ -193,7 +192,6 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     await originalHooks.emitHook('beforeReload', originalApp)
 
     // Reload app and hooks due to cache refreshing.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
     const { createApp, hooks } = require('@sqrtthree/friday')
     const app = createApp()
 
@@ -347,7 +345,6 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
           )
         }
         const closeServer = (): Promise<void> => {
-          // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
           const { createApp, hooks } = require('@sqrtthree/friday')
           const app = createApp()
 
