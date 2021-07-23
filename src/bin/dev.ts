@@ -203,12 +203,13 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
       })
     })
 
-    await originalHooks.emitHook('onClose', originalApp)
+    originalHooks.emitHook('onClose', originalApp)
+
     await originalHooks.emitHook('beforeRestart', originalApp)
 
     const newServer = await serve(endpoint)
 
-    await hooks.emitHook('onRestart', app)
+    hooks.emitHook('onRestart', app)
 
     logger.info(success('Server is ready.'))
 
@@ -348,27 +349,23 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
           const { createApp, hooks } = require('@sqrtthree/friday')
           const app = createApp()
 
-          return hooks
-            .emitHook('beforeClose', app)
-            .then(() => {
-              return new Promise<void>((resolve, reject) => {
-                logger.debug('Closing server...')
+          return hooks.emitHook('beforeClose', app).then(() => {
+            return new Promise<void>((resolve, reject) => {
+              logger.debug('Closing server...')
 
-                currentServer.close((err) => {
-                  if (err) {
-                    reject(err)
+              currentServer.close((err) => {
+                if (err) {
+                  reject(err)
 
-                    return
-                  }
+                  return
+                }
 
-                  logger.debug('Server has been closed')
-                  resolve()
-                })
+                logger.debug('Server has been closed')
+                hooks.emitHook('onClose', app)
+                resolve()
               })
             })
-            .then(() => {
-              return hooks.emitHook('onClose', app)
-            })
+          })
         }
 
         logger.debug('Gracefully shutting down. Please wait...')

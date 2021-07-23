@@ -77,12 +77,10 @@ export default function start(argv: Arguments<StartCommandOptions>): void {
                 }
 
                 logger.debug('Server has been closed')
+                hooks.emitHook('onClose', app)
                 resolve()
               })
             })
-          })
-          .then(() => {
-            return hooks.emitHook('onClose', app)
           })
           .then(() => {
             logger.success('Closed successfully')
