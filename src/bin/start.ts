@@ -59,17 +59,40 @@ export default function start(argv: Arguments<StartCommandOptions>): void {
     .then((server) => {
       gracefulShutdown(() => {
         logger.info('Gracefully shutting down. Please wait...')
-        logger.debug('Closing app server')
 
-        server.close((err) => {
-          if (err) {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
+        const { createApp, hooks } = require('@sqrtthree/friday')
+        const app = createApp()
+
+        hooks
+          .emitHook('beforeClose', app)
+          .then(() => {
+            logger.debug('Closing app server')
+
+            return new Promise<void>((resolve, reject) => {
+              server.close((err) => {
+                if (err) {
+                  reject(err)
+
+                  return
+                }
+
+                logger.debug('Server has been closed')
+                resolve()
+              })
+            })
+          })
+          .then(() => {
+            return hooks.emitHook('onClose', app)
+          })
+          .then(() => {
+            logger.success('Closed successfully')
+            process.exit(0)
+          })
+          .catch((err) => {
             logger.error(`Failed to close the server: ${err.message}`)
             process.exit(1)
-          }
-
-          logger.success('Closed successfully')
-          process.exit(0)
-        })
+          })
       })
 
       let message = 'Server is running.'

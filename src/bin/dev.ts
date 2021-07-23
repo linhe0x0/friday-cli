@@ -347,20 +347,31 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
           )
         }
         const closeServer = (): Promise<void> => {
-          return new Promise<void>((resolve, reject) => {
-            logger.debug('Closing server...')
+          // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require
+          const { createApp, hooks } = require('@sqrtthree/friday')
+          const app = createApp()
 
-            currentServer.close((err) => {
-              if (err) {
-                reject(err)
+          return hooks
+            .emitHook('beforeClose', app)
+            .then(() => {
+              return new Promise<void>((resolve, reject) => {
+                logger.debug('Closing server...')
 
-                return
-              }
+                currentServer.close((err) => {
+                  if (err) {
+                    reject(err)
 
-              logger.debug('Server has been closed')
-              resolve()
+                    return
+                  }
+
+                  logger.debug('Server has been closed')
+                  resolve()
+                })
+              })
             })
-          })
+            .then(() => {
+              return hooks.emitHook('onClose', app)
+            })
         }
 
         logger.debug('Gracefully shutting down. Please wait...')
