@@ -1,9 +1,9 @@
 export function gracefulShutdown(fn: () => void): void {
-  let run = false
+  let isExiting = false
 
   const onceWrapper = () => {
-    if (!run) {
-      run = true
+    if (!isExiting) {
+      isExiting = true
 
       fn()
     }
