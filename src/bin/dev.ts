@@ -244,6 +244,11 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
         return undefined
       }
 
+      logger.info(
+        'Start watching to build for file changes:',
+        tips(relative(opts.src))
+      )
+
       const toWatch = opts.src
 
       watchFilesToBuild(
@@ -264,8 +269,6 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
           await buildFiles([filepath], opts.src, opts.dist)
         }
       )
-
-      logger.debug('Watching to build for file changes:', relative(opts.src))
 
       if (opts.skipInitialBuild && !opts.clean) {
         logger.debug('Skip initial build due to --skip-initial-build option')
