@@ -190,11 +190,6 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     })
 
     await originalHooks.emitHook('beforeReload', originalApp)
-
-    // Reload app and hooks due to cache refreshing.
-    const { createApp, hooks } = require('@sqrtthree/friday')
-    const app = createApp()
-
     await originalHooks.emitHook('beforeClose', originalApp)
 
     await new Promise<void>((resolve): void => {
@@ -206,6 +201,10 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     originalHooks.emitHook('onClose', originalApp)
 
     await originalHooks.emitHook('beforeRestart', originalApp)
+
+    // Reload app and hooks due to cache refreshing.
+    const { createApp, hooks } = require('@sqrtthree/friday')
+    const app = createApp()
 
     const newServer = await serve(endpoint)
 
