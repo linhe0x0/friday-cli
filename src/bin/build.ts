@@ -329,7 +329,7 @@ export function watchFilesToBuild(
           const endTime = Date.now()
           const diff = ms(endTime - startTime)
 
-          logger.success(`Rebuilt file: ${relativeFilepath} (${diff})`)
+          logger.success(success(`Rebuilt file: ${relativeFilepath} (${diff})`))
         })
         .catch((err) => {
           logger.error(

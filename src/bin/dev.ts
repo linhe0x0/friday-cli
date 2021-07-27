@@ -263,7 +263,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
           // Will throw an error if cannot pass the liner
           outputLinterResult(lintResults)
 
-          logger.success('It seems that all the code is good for linter')
+          logger.info(info('It seems that all the code is good for linter'))
 
           await buildFiles([filepath], opts.src, opts.dist)
         }
@@ -305,7 +305,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
             // Will throw an error if cannot pass the liner
             outputLinterResult(lintResults)
 
-            logger.success('It seems that all the code is good for linter')
+            logger.info(info('It seems that all the code is good for linter'))
           }
 
           try {
