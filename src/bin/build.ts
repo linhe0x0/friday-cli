@@ -9,7 +9,7 @@ import { Arguments } from 'yargs'
 import { transformFileAsync, TransformOptions } from '@babel/core'
 
 import logger, { blankLine, list } from '../logger'
-import { info, success, tips } from '../logger/colorful'
+import { error, info, success, tips } from '../logger/colorful'
 import {
   checkDependencies,
   outputMissingRequiredDependencies,
@@ -333,7 +333,9 @@ export function watchFilesToBuild(
         })
         .catch((err) => {
           logger.error(
-            `Cannot rebuild file ${relativeFilepath}, Error: ${err.message}`
+            error(
+              `Cannot rebuild file ${relativeFilepath}, Error: ${err.message}`
+            )
           )
         })
     }, 500)
