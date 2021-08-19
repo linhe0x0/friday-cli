@@ -20,7 +20,7 @@ import { lintFiles, outputLinterResult } from '../utilities/linter'
 import parseEndpoint from '../utilities/parse-endpoint'
 import { gracefulShutdown } from '../utilities/process'
 import serve from '../utilities/serve'
-import watch from '../utilities/watcher'
+import watch, { WatchEventName } from '../utilities/watcher'
 import { buildDir, buildFiles, cleanOutput, watchFilesToBuild } from './build'
 
 const copyToClipboard = function copyToClipboard(content: string): boolean {
@@ -296,7 +296,11 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
       const appWatcher = watch(
         toWatch,
         /\.(?!.*(js|json)$).*$/, // Ignore non js/json files.
-        _.debounce(async (_event: string, filepath: string) => {
+        _.debounce(async (event: WatchEventName, filepath: string) => {
+          if (event === 'addDir') {
+            return
+          }
+
           if (!buildable) {
             const lintResults = await lintFiles(filepath, {
               extensions: ['js', 'json'],

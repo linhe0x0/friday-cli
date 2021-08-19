@@ -25,7 +25,7 @@ import {
 } from '../utilities/fs'
 import { gracefulShutdown } from '../utilities/process'
 import { watchFilesToTypeCheck, WatchProgram } from '../utilities/ts'
-import watch from '../utilities/watcher'
+import watch, { WatchEventName } from '../utilities/watcher'
 
 interface BuildCommandOptions {
   clean?: boolean
@@ -268,7 +268,11 @@ export function watchFilesToBuild(
   const buildWatcher = watch(
     toWatch,
     /\.(?!.*(ts|json)$).*$/, // Ignore non ts/json files.
-    _.debounce((event: string, filepath: string): void => {
+    _.debounce((event: WatchEventName, filepath: string): void => {
+      if (event === 'addDir') {
+        return
+      }
+
       const relativeFilepath = relative(filepath)
 
       if (event === 'add') {
