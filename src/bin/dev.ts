@@ -23,6 +23,15 @@ import serve from '../utilities/serve'
 import watch from '../utilities/watcher'
 import { buildDir, buildFiles, cleanOutput, watchFilesToBuild } from './build'
 
+const copyToClipboard = function copyToClipboard(content: string): boolean {
+  try {
+    clipboardy.writeSync(content)
+    return true
+  } catch (err) {
+    return false
+  }
+}
+
 interface DevCommandOptions {
   host?: string
   port?: number
@@ -104,15 +113,6 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
   }
 
   const originalPort = endpoint.port
-
-  const copyToClipboard = function copyToClipboard(content: string): boolean {
-    try {
-      clipboardy.writeSync(content)
-      return true
-    } catch (err) {
-      return false
-    }
-  }
 
   const restartServer = async function restartServer(
     watcher: chokidar.FSWatcher,
