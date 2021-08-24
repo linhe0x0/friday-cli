@@ -9,8 +9,6 @@ const logger = consola.create({
   level: isVerbose ? LogLevel.Verbose : LogLevel.Info,
 })
 
-export default logger
-
 export function blankLine(): void {
   // eslint-disable-next-line no-console
   console.log('')
@@ -33,3 +31,5 @@ export function divider(title?: string): void {
   // eslint-disable-next-line no-console
   console.log(`${heading}${dash}`)
 }
+
+export default logger
