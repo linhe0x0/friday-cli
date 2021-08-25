@@ -7,6 +7,7 @@ import build from './bin/build'
 import dev from './bin/dev'
 import lint from './bin/lint'
 import start from './bin/start'
+import script from './bin/script'
 import logger from './logger'
 import { info } from './logger/colorful'
 import { getEnvVersions } from './utilities/env-versions'
@@ -141,6 +142,31 @@ yargs
       },
     },
     lint
+  )
+  .command(
+    'script [name]',
+    'run local scripts with a http server',
+    {
+      host: {
+        alias: 'h',
+        describe: 'specify a host on which to listen',
+        type: 'string',
+      },
+      port: {
+        alias: 'p',
+        describe: 'specify a port on which to listen',
+        type: 'number',
+      },
+      debug: {
+        describe: 'enable verbose log output in script context',
+        type: 'boolean',
+      },
+      list: {
+        describe: 'list all served script names instead of starting the server',
+        type: 'boolean',
+      },
+    },
+    script
   )
   .help()
   .example(

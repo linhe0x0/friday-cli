@@ -27,15 +27,6 @@ import { gracefulShutdown } from '../utilities/process'
 import { watchFilesToTypeCheck, WatchProgram } from '../utilities/ts'
 import watch, { WatchEventName } from '../utilities/watcher'
 
-interface BuildCommandOptions {
-  clean?: boolean
-  watch?: boolean
-  src?: string
-  dist?: string
-}
-
-type BuildOptions = Required<BuildCommandOptions>
-
 const babelOptions: TransformOptions = {
   comments: false,
   presets: [
@@ -364,6 +355,15 @@ export function watchFilesToBuild(
       })
   })
 }
+
+interface BuildCommandOptions {
+  clean?: boolean
+  watch?: boolean
+  src?: string
+  dist?: string
+}
+
+type BuildOptions = Required<BuildCommandOptions>
 
 export default function build(argv: Arguments<BuildCommandOptions>): void {
   const cwd = process.cwd()
