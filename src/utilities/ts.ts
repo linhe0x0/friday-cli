@@ -13,7 +13,6 @@ import logger from '../logger'
 import { outputCode } from '../logger/code-frame'
 import { danger, error } from '../logger/colorful'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type tsConfig = Record<string, any>
 
 const readConfigFile = function readConfigFile(filename: string): tsConfig {

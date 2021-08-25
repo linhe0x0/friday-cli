@@ -42,13 +42,13 @@ const getScriptFiles = function getScriptFiles() {
   const dir = path.dirname(entry)
   const scriptDir = path.join(dir, 'scripts')
   const filePattern = `${scriptDir}/*.js`
-  const filenames = fastGlob.sync(filePattern)
+  const filenames: string[] = fastGlob.sync(filePattern)
 
   logger.debug(text(`script dir: ${relative(scriptDir)}`))
 
   const scripts = _.map(
-    _.filter(filenames, (item) => !ignoredFile(item)),
-    (item) => {
+    _.filter(filenames, (item: string) => !ignoredFile(item)),
+    (item: string) => {
       const { base, name } = path.parse(item)
 
       return {
@@ -205,9 +205,9 @@ export default function script(argv: Arguments<ScriptCommandOptions>): void {
       process.exit(1)
     }
 
-    const script = loader(targetScript.path)
-    const { schema } = script
-    const handler = script.handler || script.default
+    const loadedScript = loader(targetScript.path)
+    const { schema } = loadedScript
+    const handler = loadedScript.handler || loadedScript.default
 
     if (typeof handler !== 'function') {
       logger.error(
@@ -253,12 +253,12 @@ export default function script(argv: Arguments<ScriptCommandOptions>): void {
     Promise.resolve()
       .then(() => {
         const requestID = uuidv4()
-        const logger = useLogger(`[cli] ${targetScript.name}`, {
+        const contextLogger = useLogger(`[cli] ${targetScript.name}`, {
           'x-request-id': requestID,
         })
 
         const ctx = {
-          logger,
+          logger: contextLogger,
         }
 
         return handler(ctx, data)
