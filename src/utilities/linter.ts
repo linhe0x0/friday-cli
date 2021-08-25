@@ -16,34 +16,8 @@ export function lintFiles(
 ): Promise<LintResult> {
   const eslint = new ESLint(options)
 
-  let isConfigurationOK = true
-
-  return eslint
-    .calculateConfigForFile(patterns)
-    .then(
-      () => {
-        isConfigurationOK = true
-      },
-      () => {
-        isConfigurationOK = false
-      }
-    )
-    .then(() => {
-      if (!isConfigurationOK) {
-        logger.warn(
-          `${warn(
-            'No configuration file found, please add configuration file and run again.'
-          )} see ${link(
-            'https://eslint.org/docs/user-guide/configuring/configuration-files#configuration-file-formats'
-          )} to get more details.`
-        )
-
-        return null
-      }
-
-      return eslint.lintFiles(patterns)
-    })
-    .then((results) => {
+  return eslint.lintFiles(patterns).then(
+    (results) => {
       if (!results || results.length === 0) {
         return {
           errorCount: 0,
@@ -72,7 +46,31 @@ export function lintFiles(
           message,
         }
       })
-    })
+    },
+    (err) => {
+      const configurationNotFoundError = err.message.includes(
+        'No ESLint configuration found'
+      )
+
+      if (configurationNotFoundError) {
+        logger.warn(
+          `${warn(
+            'No ESLint configuration file found, please add configuration file and run again.'
+          )} see ${link(
+            'https://eslint.org/docs/user-guide/configuring/configuration-files#configuration-file-formats'
+          )} to get more details.`
+        )
+
+        return {
+          errorCount: 0,
+          warningCount: 0,
+          message: '',
+        }
+      }
+
+      throw err
+    }
+  )
 }
 
 export function outputLinterResult(lintResults: LintResult): void {
