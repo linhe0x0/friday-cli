@@ -11,33 +11,68 @@ interface LintResult {
 }
 
 export function lintFiles(
-  patterns: string | string[],
+  patterns: string,
   options?: ESLint.Options
 ): Promise<LintResult> {
   const eslint = new ESLint(options)
 
-  return eslint.lintFiles(patterns).then((results) => {
-    const errorCount: number = _.reduce(
-      _.map(results, (item: ESLint.LintResult) => item.errorCount),
-      (prev: number, curr: number): number => prev + curr,
-      0
-    )
-    const warningCount: number = _.reduce(
-      _.map(results, (item: ESLint.LintResult) => item.warningCount),
-      (prev: number, curr: number): number => prev + curr,
-      0
-    )
+  let isConfigurationOK = true
 
-    return eslint.loadFormatter('stylish').then((formatter) => {
-      const message = formatter.format(results)
-
-      return {
-        errorCount,
-        warningCount,
-        message,
+  return eslint
+    .calculateConfigForFile(patterns)
+    .then(
+      () => {
+        isConfigurationOK = true
+      },
+      () => {
+        isConfigurationOK = false
       }
+    )
+    .then(() => {
+      if (!isConfigurationOK) {
+        logger.warn(
+          `${warn(
+            'No configuration file found, please add configuration file and run again.'
+          )} see ${link(
+            'https://eslint.org/docs/user-guide/configuring/configuration-files#configuration-file-formats'
+          )} to get more details.`
+        )
+
+        return null
+      }
+
+      return eslint.lintFiles(patterns)
     })
-  })
+    .then((results) => {
+      if (!results || results.length === 0) {
+        return {
+          errorCount: 0,
+          warningCount: 0,
+          message: '',
+        }
+      }
+
+      const errorCount: number = _.reduce(
+        _.map(results, (item: ESLint.LintResult) => item.errorCount),
+        (prev: number, curr: number): number => prev + curr,
+        0
+      )
+      const warningCount: number = _.reduce(
+        _.map(results, (item: ESLint.LintResult) => item.warningCount),
+        (prev: number, curr: number): number => prev + curr,
+        0
+      )
+
+      return eslint.loadFormatter('stylish').then((formatter) => {
+        const message = formatter.format(results)
+
+        return {
+          errorCount,
+          warningCount,
+          message,
+        }
+      })
+    })
 }
 
 export function outputLinterResult(lintResults: LintResult): void {
