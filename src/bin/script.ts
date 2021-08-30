@@ -42,22 +42,26 @@ const getScriptFiles = function getScriptFiles() {
   const dir = path.dirname(entry)
   const scriptDir = path.join(dir, 'scripts')
   const filePattern = `${scriptDir}/*.js`
-  const filenames: string[] = fastGlob.sync(filePattern)
+  const files: string[] = fastGlob.sync(filePattern)
 
   logger.debug(text(`script dir: ${relative(scriptDir)}`))
 
-  const scripts = _.map(
-    _.filter(filenames, (item: string) => !ignoredFile(item)),
-    (item: string) => {
-      const { base, name } = path.parse(item)
+  const matchedFiles = _.filter(files, (item: string) => {
+    const name = path.basename(item)
+    const ignore = ignoredFile(name)
 
-      return {
-        path: item,
-        filename: base,
-        name,
-      }
+    return !ignore
+  })
+
+  const scripts = _.map(matchedFiles, (item: string) => {
+    const { base, name } = path.parse(item)
+
+    return {
+      path: item,
+      filename: base,
+      name,
     }
-  )
+  })
 
   return scripts
 }
@@ -184,10 +188,14 @@ export default function script(argv: Arguments<ScriptCommandOptions>): void {
     const scripts = getScriptFiles()
     const names = _.map(scripts, 'name')
 
-    logger.info(info('The following scripts will be served:'))
+    if (names.length) {
+      logger.info(info('The following scripts will be served:'))
 
-    list(names)
-    blankLine()
+      list(names)
+      blankLine()
+    } else {
+      logger.info(info('There are no scripts that will be served.'))
+    }
 
     return
   }
