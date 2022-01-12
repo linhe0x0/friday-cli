@@ -88,11 +88,15 @@ yargs
         type: 'string',
       },
       'no-clean': {
-        describe: 'disable to delete the outputs of all projects',
+        describe: 'disable to delete the outputs of the project',
         type: 'boolean',
       },
       'no-build': {
-        describe: 'disable file compilation of all projects',
+        describe: 'disable file compilation of the project',
+        type: 'boolean',
+      },
+      'type-check': {
+        describe: 'run type checking after file changes',
         type: 'boolean',
       },
       'skip-initial-build': {

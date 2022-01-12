@@ -40,6 +40,7 @@ interface DevCommandOptions {
   clean?: boolean
   build?: boolean
   skipInitialBuild?: boolean
+  typeCheck?: boolean
   dist?: string
 }
 
@@ -63,6 +64,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
       clean: true,
       build: true,
       skipInitialBuild: false,
+      typeCheck: false,
       dist: 'dist',
     },
     argv
@@ -251,7 +253,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
 
       watchFilesToBuild(
         toWatch,
-        true,
+        opts.typeCheck,
         async (filepath: string): Promise<void> => {
           logger.debug(`Find problems in ${relative(filepath)}`)
 
