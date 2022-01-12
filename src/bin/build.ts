@@ -243,7 +243,7 @@ export function buildDir(
 
 export function watchFilesToBuild(
   toWatch: string,
-  lintBeforeBuild: boolean,
+  typeCheckBeforeBuild: boolean,
   fn: (filepath: string) => Promise<void>
 ): void {
   const filePattern = `${toWatch}/**/*.ts`
@@ -251,7 +251,7 @@ export function watchFilesToBuild(
 
   let typeCheckWatcher: WatchProgram | undefined
 
-  if (lintBeforeBuild) {
+  if (typeCheckBeforeBuild) {
     typeCheckWatcher = watchFilesToTypeCheck(tsFiles, {})
   }
 
@@ -269,7 +269,7 @@ export function watchFilesToBuild(
         logger.debug(`File created: ${relativeFilepath}`)
 
         if (
-          lintBeforeBuild &&
+          typeCheckBeforeBuild &&
           typeCheckWatcher &&
           !typeCheckWatcher.useUserConfigFile
         ) {
@@ -293,7 +293,7 @@ export function watchFilesToBuild(
         logger.debug(`File deleted: ${relativeFilepath}`)
 
         if (
-          lintBeforeBuild &&
+          typeCheckBeforeBuild &&
           typeCheckWatcher &&
           !typeCheckWatcher.useUserConfigFile
         ) {
