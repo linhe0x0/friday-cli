@@ -97,7 +97,7 @@ interface ServeScriptsOptions {
 export function serveScripts(options: ServeScriptsOptions): Promise<Server> {
   const opts = _.defaults(options, {
     host: '0.0.0.0',
-    port: 3001,
+    port: 3010,
     debug: false,
   })
 
