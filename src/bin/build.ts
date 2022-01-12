@@ -403,7 +403,7 @@ export default function build(argv: Arguments<BuildCommandOptions>): void {
       if (opts.watch) {
         const toWatch = opts.src
 
-        watchFilesToBuild(toWatch, false, (filepath: string): Promise<void> => {
+        watchFilesToBuild(toWatch, true, (filepath: string): Promise<void> => {
           // eslint-disable-next-line @typescript-eslint/no-empty-function
           return buildFiles([filepath], opts.src, opts.dist).then(() => {})
         })
