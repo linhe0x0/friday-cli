@@ -35,6 +35,7 @@ interface DevCommandOptions {
   host?: string
   port?: number
   listen?: string
+  env?: string
 
   // For building
   clean?: boolean
@@ -60,6 +61,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
       host: defaultHost,
       port: defaultPort,
       listen: '',
+      env: 'development',
       src,
       clean: true,
       build: true,
@@ -71,8 +73,13 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
   )
 
   process.env.FRIDAY_ENV = 'development'
+  process.env.APP_ENV = opts.env || 'development'
 
-  if (_.isNil(process.env.NODE_ENV)) {
+  if (!process.env.NODE_CONFIG_ENV) {
+    process.env.NODE_CONFIG_ENV = process.env.APP_ENV
+  }
+
+  if (!process.env.NODE_ENV) {
     process.env.NODE_ENV = 'development'
   }
 
