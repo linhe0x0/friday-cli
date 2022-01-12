@@ -7,6 +7,7 @@ import path from 'path'
 import { Arguments } from 'yargs'
 
 import { transformFileAsync, TransformOptions } from '@babel/core'
+import { gracefulShutdown } from '@sqrtthree/friday/dist/lib/process'
 
 import logger, { blankLine, list } from '../logger'
 import { error, info, success, tips } from '../logger/colorful'
@@ -14,7 +15,6 @@ import {
   checkDependencies,
   outputMissingRequiredDependencies,
 } from '../utilities/dependency'
-import { setEnv } from '../utilities/env'
 import {
   copyFile,
   getMirrorFile,
@@ -23,7 +23,6 @@ import {
   relative,
   removeFiles,
 } from '../utilities/fs'
-import { gracefulShutdown } from '../utilities/process'
 import { watchFilesToTypeCheck, WatchProgram } from '../utilities/ts'
 import watch, { WatchEventName } from '../utilities/watcher'
 
@@ -381,7 +380,7 @@ export default function build(argv: Arguments<BuildCommandOptions>): void {
   const dist = path.resolve(cwd, opts.dist)
 
   if (_.isNil(process.env.NODE_ENV)) {
-    setEnv('NODE_ENV', 'production')
+    process.env.NODE_ENV = 'production'
   }
 
   logger.debug(`Source dir: ${tips(src)}`)

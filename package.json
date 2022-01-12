@@ -4,7 +4,8 @@
   "description": "Command line tools for Friday. Generate, write and run an application with one single command.",
   "main": "dist/index.js",
   "bin": {
-    "friday": "./dist/index.js"
+    "friday": "./dist/index.js",
+    "friday-cli": "./dist/index.js"
   },
   "scripts": {
     "dev": "tsc --watch",

@@ -8,18 +8,17 @@ import _ from 'lodash'
 import path from 'path'
 import { Arguments } from 'yargs'
 
+import isValidPort from '@sqrtthree/friday/dist/lib/is-valid-port'
+import parseEndpoint from '@sqrtthree/friday/dist/lib/parse-endpoint'
+import { gracefulShutdown } from '@sqrtthree/friday/dist/lib/process'
+import serve, { Endpoint } from '@sqrtthree/friday/dist/lib/serve'
+
 import logger from '../logger'
 import { error, info, strong, success, tips, warn } from '../logger/colorful'
-import { Endpoint, EndpointProtocol } from '../types'
 import { getConfigDir, isConfigFile } from '../utilities/config'
 import { getEntryFile } from '../utilities/entry'
-import { setEnv } from '../utilities/env'
 import { existsSync, relative } from '../utilities/fs'
-import isValidPort from '../utilities/is-valid-port'
 import { lintFiles, outputLinterResult } from '../utilities/linter'
-import parseEndpoint from '../utilities/parse-endpoint'
-import { gracefulShutdown } from '../utilities/process'
-import serve from '../utilities/serve'
 import watch, { WatchEventName } from '../utilities/watcher'
 import { buildDir, buildFiles, cleanOutput, watchFilesToBuild } from './build'
 
@@ -69,6 +68,12 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     argv
   )
 
+  process.env.FRIDAY_ENV = 'development'
+
+  if (_.isNil(process.env.NODE_ENV)) {
+    process.env.NODE_ENV = 'development'
+  }
+
   if (opts.skipInitialBuild) {
     opts.clean = false
 
@@ -76,12 +81,6 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
   }
 
   const { host, port, listen } = opts
-
-  if (_.isNil(process.env.NODE_ENV)) {
-    setEnv('NODE_ENV', 'development')
-  }
-
-  setEnv('FRIDAY_ENV', 'development')
 
   const isHostOrPortProvided = !!(host || port)
 
@@ -100,12 +99,12 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
   const endpoint: Endpoint = listen
     ? parseEndpoint(listen)
     : {
-        protocol: EndpointProtocol.HTTP,
+        protocol: 'http:',
         host: host || defaultHost,
         port,
       }
 
-  if (endpoint.protocol !== EndpointProtocol.UNIX) {
+  if (endpoint.protocol !== 'unix:') {
     _.defaults(endpoint, {
       host: defaultHost,
       port: defaultPort,
@@ -122,6 +121,8 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     const relativeFilepath = relative(filepath)
     const configChanged = isConfigFile(filepath)
 
+    process.env.FRIDAY_RESTARTED = 'true'
+
     logger.info(`${success('File changed:')} ${relativeFilepath}`)
 
     if (configChanged) {
@@ -133,8 +134,6 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     }
 
     logger.info(info('Restarting server...'))
-
-    setEnv('FRIDAY_RESTARTED', 'true')
 
     const {
       createApp: createOriginalApp,
@@ -285,7 +284,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     .then((server) => {
       const { isTTY } = process.stdout
       const usedPort = endpoint.port
-      const isUnixProtocol = endpoint.protocol === EndpointProtocol.UNIX
+      const isUnixProtocol = endpoint.protocol === 'unix:'
       const ipAddress = ip.address()
       const entry = getEntryFile()
       const toWatch = path.dirname(entry)
@@ -356,9 +355,9 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
           const app = createApp()
 
           return hooks.emitHook('beforeClose', app).then(() => {
-            return new Promise<void>((resolve, reject) => {
-              logger.debug('Closing server...')
+            logger.debug('Closing app server...')
 
+            return new Promise<void>((resolve, reject) => {
               currentServer.close((err) => {
                 if (err) {
                   reject(err)
@@ -389,6 +388,8 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
           })
       })
 
+      // `friday dev` is designed to run only in development, so
+      // this message is perfectly for development.
       let message = success('Friday is running:')
 
       if (originalPort !== usedPort) {

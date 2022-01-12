@@ -3,10 +3,11 @@
 import _ from 'lodash'
 import yargs from 'yargs'
 
+import start from '@sqrtthree/friday/dist/bin/start'
+
 import build from './bin/build'
 import dev from './bin/dev'
 import lint from './bin/lint'
-import start from './bin/start'
 import script from './bin/script'
 import logger from './logger'
 import { info } from './logger/colorful'
