@@ -96,6 +96,7 @@ yargs
         type: 'boolean',
       },
       'type-check': {
+        alias: 't',
         describe: 'run type checking after file changes',
         type: 'boolean',
       },
