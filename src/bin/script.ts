@@ -201,7 +201,7 @@ export default function script(argv: Arguments<ScriptCommandOptions>): void {
   }
 
   /**
-   * Run sigle script.
+   * Run single script.
    */
   if (argv.name) {
     const scripts = getScriptFiles()
