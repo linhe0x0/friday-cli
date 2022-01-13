@@ -40,8 +40,8 @@
     "src/**/*.ts": "npm run lint"
   },
   "dependencies": {
-    "@babel/code-frame": "~7.14.5",
-    "@babel/core": "~7.15.0",
+    "@babel/code-frame": "~7.16.7",
+    "@babel/core": "~7.16.7",
     "@koa/router": "~10.1.1",
     "@sqrtthree/tsconfig": "~1.0.0",
     "boxen": "~5.0.0",
