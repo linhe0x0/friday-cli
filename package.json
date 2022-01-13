@@ -74,7 +74,7 @@
     "husky": "~7.0.2",
     "jest": "~27.0.6",
     "lint-staged": "~11.1.2",
-    "prettier": "~2.3.2"
+    "prettier": "~2.5.1"
   },
   "peerDependencies": {
     "@sqrtthree/friday": ">= 1.3.0"
