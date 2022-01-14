@@ -440,7 +440,10 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
         margin: 1,
       })
 
-      process.stdout.write(box)
+      // Add delay to make sure the message is printed after the debug routes output.
+      setTimeout(() => {
+        process.stdout.write(box)
+      }, 100)
     })
     .catch((err) => {
       logger.error(err)
