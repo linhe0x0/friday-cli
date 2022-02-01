@@ -183,7 +183,8 @@ const reportWatchStatusChanged = function reportWatchStatusChanged(
 
   const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
   const errorMatched = message.match(/\d+/)
-  const errorCount: number = errorMatched ? parseInt(errorMatched[0], 10) : 0
+  const errorCount: number =
+    errorMatched && errorMatched[0] ? parseInt(errorMatched[0], 10) : 0
 
   logger.debug(`[tcs:${diagnostic.code}]: ${diagnostic.messageText}`)
 

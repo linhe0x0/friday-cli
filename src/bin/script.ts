@@ -5,7 +5,7 @@ import _ from 'lodash'
 import minimist from 'minimist'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
-import { Arguments } from 'yargs'
+import type { Arguments } from 'yargs'
 
 import Router from '@koa/router'
 import { useLogger, validate } from '@sqrtthree/friday'
@@ -89,9 +89,9 @@ const pathToRoute = function pathToRoute(filePath: string): Route {
 }
 
 interface ServeScriptsOptions {
-  host?: string
-  port?: number
-  debug?: boolean
+  host?: string | undefined
+  port?: number | undefined
+  debug?: boolean | undefined
 }
 
 export function serveScripts(options: ServeScriptsOptions): Promise<Server> {
@@ -137,7 +137,7 @@ export function serveScripts(options: ServeScriptsOptions): Promise<Server> {
 
         try {
           validate(s, data)
-        } catch (err) {
+        } catch (err: any) {
           ctx.throw(400, err)
         }
       }
@@ -169,11 +169,11 @@ export function serveScripts(options: ServeScriptsOptions): Promise<Server> {
 }
 
 interface ScriptCommandOptions {
-  name?: string
-  host?: string
-  port?: number
-  debug?: boolean
-  list?: boolean
+  name?: string | undefined
+  host?: string | undefined
+  port?: number | undefined
+  debug?: boolean | undefined
+  list?: boolean | undefined
 }
 
 export default function script(argv: Arguments<ScriptCommandOptions>): void {
@@ -244,7 +244,7 @@ export default function script(argv: Arguments<ScriptCommandOptions>): void {
 
       try {
         validate(s, data)
-      } catch (err) {
+      } catch (err: any) {
         const errors = _.map(
           err.errors,
           (item) => `data${item.dataPath} ${item.message}`

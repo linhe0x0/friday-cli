@@ -4,7 +4,7 @@ import { writeFile } from 'fs/promises'
 import _ from 'lodash'
 import ms from 'ms'
 import path from 'path'
-import { Arguments } from 'yargs'
+import type { Arguments } from 'yargs'
 
 import { transformFileAsync, TransformOptions } from '@babel/core'
 import { gracefulShutdown } from '@sqrtthree/friday/dist/lib/process'
@@ -199,7 +199,7 @@ export function buildDir(
       if (failed > 0) {
         _.forEach(results, (item: boolean | string, index: number): void => {
           if (typeof item === 'string') {
-            const filename = tsFiles[index]
+            const filename = tsFiles[index] as string
 
             const i = item.indexOf(':')
             const errMessage = _.startsWith(item, '/')
@@ -356,26 +356,20 @@ export function watchFilesToBuild(
 }
 
 interface BuildCommandOptions {
-  clean?: boolean
-  watch?: boolean
-  src?: string
-  dist?: string
+  clean?: boolean | undefined
+  watch?: boolean | undefined
+  dist?: string | undefined
 }
-
-type BuildOptions = Required<BuildCommandOptions>
 
 export default function build(argv: Arguments<BuildCommandOptions>): void {
   const cwd = process.cwd()
   const src = path.resolve(cwd, 'src')
-  const opts: BuildOptions = _.assign(
-    {
-      src,
-      clean: true,
-      watch: false,
-      dist: 'dist',
-    },
-    argv
-  )
+  const opts = _.defaults(argv, {
+    src,
+    clean: true,
+    watch: false,
+    dist: 'dist',
+  })
 
   const dist = path.resolve(cwd, opts.dist)
 

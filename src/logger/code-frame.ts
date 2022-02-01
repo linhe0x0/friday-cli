@@ -19,7 +19,11 @@ export function outputCodeFrameColumns(
   try {
     content = readFileSync(filename, 'utf8')
   } catch (err) {
-    logger.warn(`Cannot read file ${filename}: ${err.message}`)
+    if (err instanceof Error) {
+      logger.warn(`Cannot read file ${filename}: ${err.message}`)
+    } else {
+      logger.warn(`Cannot read file ${filename}`)
+    }
   }
 
   if (!content) {

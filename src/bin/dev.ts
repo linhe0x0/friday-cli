@@ -1,12 +1,12 @@
 import boxen from 'boxen'
-import chokidar from 'chokidar'
+import type { FSWatcher } from 'chokidar'
 import clipboardy from 'clipboardy'
 import getPort from 'get-port'
-import http from 'http'
+import type { Server } from 'http'
 import ip from 'ip'
 import _ from 'lodash'
 import path from 'path'
-import { Arguments } from 'yargs'
+import type { Arguments } from 'yargs'
 
 import isValidPort from '@sqrtthree/friday/dist/lib/is-valid-port'
 import parseEndpoint from '@sqrtthree/friday/dist/lib/parse-endpoint'
@@ -32,21 +32,17 @@ const copyToClipboard = function copyToClipboard(content: string): boolean {
 }
 
 interface DevCommandOptions {
-  host?: string
-  port?: number
-  listen?: string
-  env?: string
+  host?: string | undefined
+  port?: number | undefined
+  listen?: string | undefined
+  env?: string | undefined
 
   // For building
-  clean?: boolean
-  build?: boolean
-  skipInitialBuild?: boolean
-  typeCheck?: boolean
-  dist?: string
-}
-
-type DevOptions = Required<DevCommandOptions> & {
-  src: string
+  clean?: boolean | undefined
+  build?: boolean | undefined
+  skipInitialBuild?: boolean | undefined
+  typeCheck?: boolean | undefined
+  dist?: string | undefined
 }
 
 export default function dev(argv: Arguments<DevCommandOptions>): void {
@@ -56,21 +52,18 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
   const defaultPort = parseInt(process.env.PORT || '3000', 10) || 3000
   const defaultHost = '0.0.0.0'
 
-  const opts: DevOptions = _.assign(
-    {
-      host: defaultHost,
-      port: defaultPort,
-      listen: '',
-      env: 'development',
-      src,
-      clean: true,
-      build: true,
-      skipInitialBuild: false,
-      typeCheck: false,
-      dist: 'dist',
-    },
-    argv
-  )
+  const opts = _.defaults(argv, {
+    host: defaultHost,
+    port: defaultPort,
+    listen: '',
+    env: 'development',
+    src,
+    clean: true,
+    build: true,
+    skipInitialBuild: false,
+    typeCheck: false,
+    dist: 'dist',
+  })
 
   process.env.FRIDAY_ENV = 'development'
   process.env.APP_ENV = opts.env || 'development'
@@ -110,7 +103,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     : {
         protocol: 'http:',
         host: host || defaultHost,
-        port,
+        port: port || defaultPort,
       }
 
   if (endpoint.protocol !== 'unix:') {
@@ -123,10 +116,10 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
   const originalPort = endpoint.port
 
   const restartServer = async function restartServer(
-    watcher: chokidar.FSWatcher,
+    watcher: FSWatcher,
     filepath: string,
-    server: http.Server
-  ): Promise<http.Server> {
+    server: Server
+  ): Promise<Server> {
     const relativeFilepath = relative(filepath)
     const configChanged = isConfigFile(filepath)
 
@@ -226,7 +219,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
   const buildable = existsSync(opts.src)
 
   getPort({
-    port: endpoint.port,
+    port: endpoint.port || defaultPort,
   })
     .then((result): Promise<void> | void => {
       endpoint.port = result
@@ -326,7 +319,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
               filepath,
               currentServer
             )
-          } catch (err) {
+          } catch (err: any) {
             logger.error(`Failed to restart the server: ${err.message}`)
             process.exit(1)
           }
@@ -342,7 +335,7 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
               filepath,
               currentServer
             )
-          } catch (err) {
+          } catch (err: any) {
             logger.error(`Failed to restart the server: ${err.message}`)
             process.exit(1)
           }

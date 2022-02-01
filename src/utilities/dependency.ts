@@ -1,11 +1,17 @@
 import _ from 'lodash'
-import readPkgUp, { NormalizedReadResult } from 'read-pkg-up'
+import readPkgUp, { NormalizedReadResult, NormalizeOptions } from 'read-pkg-up'
 
 import logger, { blankLine, list } from '../logger'
 import { error, tips } from '../logger/colorful'
 
 export function getPkg(cwd?: string): NormalizedReadResult | undefined {
-  const result = readPkgUp.sync({ cwd })
+  const options: NormalizeOptions = {}
+
+  if (cwd) {
+    options.cwd = cwd
+  }
+
+  const result = readPkgUp.sync(options)
 
   logger.debug(
     'Read the closest package.json file:',

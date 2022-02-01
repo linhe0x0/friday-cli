@@ -1,7 +1,7 @@
 import fastGlob from 'fast-glob'
 import _ from 'lodash'
 import path from 'path'
-import { Arguments } from 'yargs'
+import type { Arguments } from 'yargs'
 
 import logger from '../logger'
 import { outputCode } from '../logger/code-frame'
@@ -11,25 +11,19 @@ import { lintFiles, outputLinterResult } from '../utilities/linter'
 import { typeCheck } from '../utilities/ts'
 
 interface LintCommandOptions {
-  disableTypeCheck?: boolean
-  fix?: boolean
-  src?: string
+  disableTypeCheck?: boolean | undefined
+  fix?: boolean | undefined
 }
-
-type LintOptions = Required<LintCommandOptions>
 
 export default function lint(argv: Arguments<LintCommandOptions>): void {
   const cwd = process.cwd()
   const src = path.resolve(cwd, 'src')
   const relativeSrc = relative(src)
-  const opts: LintOptions = _.assign(
-    {
-      src,
-      disableTypeCheck: false,
-      fix: false,
-    },
-    argv
-  )
+  const opts = _.defaults(argv, {
+    src,
+    disableTypeCheck: false,
+    fix: false,
+  })
 
   let srcDirExists = true
 

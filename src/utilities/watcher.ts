@@ -1,5 +1,5 @@
 import chokidar from 'chokidar'
-import fs from 'fs'
+import type fs from 'fs'
 
 export type WatchEventName =
   | 'add'
