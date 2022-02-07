@@ -126,15 +126,6 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
     process.env.FRIDAY_RESTARTED = 'true'
 
     logger.info(`${success('File changed:')} ${relativeFilepath}`)
-
-    if (configChanged) {
-      logger.info(
-        `Found a configuration change in ${warn(
-          relativeFilepath
-        )}. Restart the server to see the changes in effect.`
-      )
-    }
-
     logger.info(info('Restarting server...'))
 
     const {
@@ -336,6 +327,14 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
           blankLine()
           divider()
           blankLine()
+
+          const relativeFilepath = relative(filepath)
+
+          logger.info(
+            `Found a configuration change in ${warn(
+              relativeFilepath
+            )}. Restart the server to see the changes in effect.`
+          )
 
           try {
             currentServer = await restartServer(
