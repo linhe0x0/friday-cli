@@ -1,11 +1,11 @@
 import boxen from 'boxen'
-import type { FSWatcher } from 'chokidar'
 import clipboardy from 'clipboardy'
 import getPort from 'get-port'
-import type { Server } from 'http'
 import ip from 'ip'
 import _ from 'lodash'
 import path from 'path'
+import type { FSWatcher } from 'chokidar'
+import type { Server } from 'http'
 import type { Arguments } from 'yargs'
 
 import isValidPort from '@sqrtthree/friday/dist/lib/is-valid-port'
@@ -13,7 +13,7 @@ import parseEndpoint from '@sqrtthree/friday/dist/lib/parse-endpoint'
 import { gracefulShutdown } from '@sqrtthree/friday/dist/lib/process'
 import serve, { Endpoint } from '@sqrtthree/friday/dist/lib/serve'
 
-import logger from '../logger'
+import logger, { blankLine, divider } from '../logger'
 import { error, info, strong, success, tips, warn } from '../logger/colorful'
 import { getConfigDir, isConfigFile } from '../utilities/config'
 import { getEntryFile } from '../utilities/entry'
@@ -129,9 +129,9 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
 
     if (configChanged) {
       logger.info(
-        `${warn(
-          'Reload due to configuration file changes:'
-        )} ${relativeFilepath}`
+        `Found a configuration change in ${warn(
+          relativeFilepath
+        )}. Restart the server to see the changes in effect.`
       )
     }
 
@@ -303,6 +303,10 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
           }
 
           if (!buildable) {
+            blankLine()
+            divider()
+            blankLine()
+
             const lintResults = await lintFiles(filepath, {
               extensions: ['js', 'json'],
             })
@@ -329,6 +333,10 @@ export default function dev(argv: Arguments<DevCommandOptions>): void {
         configDir,
         '',
         _.debounce(async (_event: string, filepath: string) => {
+          blankLine()
+          divider()
+          blankLine()
+
           try {
             currentServer = await restartServer(
               configWatcher,

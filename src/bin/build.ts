@@ -9,7 +9,7 @@ import type { Arguments } from 'yargs'
 import { transformFileAsync, TransformOptions } from '@babel/core'
 import { gracefulShutdown } from '@sqrtthree/friday/dist/lib/process'
 
-import logger, { blankLine, list } from '../logger'
+import logger, { blankLine, divider, list } from '../logger'
 import { error, info, success, tips } from '../logger/colorful'
 import {
   checkDependencies,
@@ -262,6 +262,10 @@ export function watchFilesToBuild(
       if (event === 'addDir') {
         return
       }
+
+      blankLine()
+      divider()
+      blankLine()
 
       const relativeFilepath = relative(filepath)
 
