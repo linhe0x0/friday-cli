@@ -22,9 +22,9 @@ export default function watch(
 
   if (ignored) {
     if (Array.isArray(ignored)) {
-      watchConfig.ignored = watchConfig.ignored.concat(ignored)
+      watchConfig.ignored = (watchConfig.ignored as RegExp[]).concat(ignored)
     } else {
-      watchConfig.ignored.push(ignored)
+      ;(watchConfig.ignored as (string | RegExp)[]).push(ignored)
     }
   }
 
