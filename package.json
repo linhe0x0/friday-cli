@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@babel/code-frame": "~7.16.7",
-    "@babel/core": "~7.16.7",
+    "@babel/core": "~7.17.2",
     "@koa/router": "~10.1.1",
     "@sqrtthree/tsconfig": "~2.0.0",
     "boxen": "~5.0.0",
