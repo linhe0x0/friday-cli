@@ -64,7 +64,7 @@
     "yargs": "~17.3.1"
   },
   "devDependencies": {
-    "@sqrtthree/eslint-config-ts": "~0.2.0",
+    "@sqrtthree/eslint-config-ts": "~0.3.0",
     "@sqrtthree/friday": "~1.4.0",
     "@sqrtthree/prettier-config": "~2.0.1",
     "@types/eslint": "~8.2.2",
