@@ -73,7 +73,7 @@
     "@types/yargs": "~17.0.8",
     "husky": "~7.0.4",
     "jest": "~27.5.1",
-    "lint-staged": "~11.1.4",
+    "lint-staged": "~13.0.0",
     "prettier": "~2.5.1"
   },
   "peerDependencies": {
