@@ -7,7 +7,7 @@ import { error, link, tips, warn } from '../logger/colorful'
 interface LintResult {
   errorCount: number
   warningCount: number
-  message: string
+  message: string | Promise<string>
 }
 
 export function lintFiles(
