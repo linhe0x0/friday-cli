@@ -44,7 +44,7 @@
     "@koa/router": "~10.1.1",
     "@sqrtthree/tsconfig": "~2.0.0",
     "boxen": "~5.0.0",
-    "chalk": "~4.1.2",
+    "chalk": "~5.2.0",
     "chokidar": "~3.5.2",
     "clipboardy": "~2.3.0",
     "consola": "~2.15.3",
