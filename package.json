@@ -43,7 +43,7 @@
     "@babel/core": "~7.18.5",
     "@koa/router": "~10.1.1",
     "@sqrtthree/tsconfig": "~2.0.0",
-    "boxen": "~5.0.0",
+    "boxen": "~7.0.2",
     "chalk": "~4.1.2",
     "chokidar": "~3.5.2",
     "clipboardy": "~2.3.0",
